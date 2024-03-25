@@ -16,6 +16,7 @@ WHERE
     frames NOT REGEXP 'p139[6-9]' AND
     frames NOT REGEXP 'p14[0-3][0-9]' AND
     frames NOT REGEXP 'p144[0-6]' AND
+    frames NOT REGEXP 'r[23]' AND
     LENGTH(frames) >= 48 AND
     LENGTH(frames) <= 256;
 
