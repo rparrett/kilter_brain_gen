@@ -42,7 +42,7 @@ trainer = WordLevelTrainer(special_tokens=special_tokens)
 tokenizer = Tokenizer(models.WordLevel(unk_token="[UNK]"))
 tokenizer.enable_padding(length=max_length)
 tokenizer.enable_truncation(max_length=max_length)
-pprint.pprint(tokenizer.add_special_tokens(special_tokens))
+tokenizer.add_special_tokens(special_tokens)
 tokenizer.pre_tokenizer = pre_tokenizers.Split(Regex(r"p\d+|r\d+"), behavior="isolated")
 
 batch_size = 1000
@@ -67,7 +67,8 @@ tokenizer.post_processor = TemplateProcessing(
 )
 
 pprint.pprint(tokenizer.get_vocab())
-pprint.pprint(tokenizer.encode("p1596r15p1597r14", "p1595r15p1596r12").tokens)
+pprint.pprint(tokenizer.encode("p1596r15p1597r14").tokens)
+pprint.pprint(tokenizer.encode("p1595r15p1596r12").tokens)
 
 # Train Model
 
@@ -100,6 +101,8 @@ tokenized_train = tokenized_train.remove_columns(
 tokenized_test = tokenized_test.remove_columns(
     ["frames", "display_difficulty", "quality_average"]
 )
+
+pprint.pprint(tokenized_train[0])
 
 data_collator = DataCollatorForLanguageModeling(
     tokenizer=tokenizer_pretrained, mlm=False, mlm_probability=0.15
