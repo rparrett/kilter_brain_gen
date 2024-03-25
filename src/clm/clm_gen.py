@@ -8,14 +8,24 @@ tokenizer = AutoTokenizer.from_pretrained(model_dir)
 config = GPT2Config.from_pretrained(model_dir)
 model = GPT2LMHeadModel.from_pretrained(model_dir)
 
-generator = pipeline("text-generation", model=model, tokenizer=tokenizer)
+generator = pipeline(
+    "text-generation", model=model, tokenizer=tokenizer, max_new_tokens=20
+)
 
-for n in range(10):
-    # Using p1128r12p1462r15p1458r15 seems to generate garbage. It seems like
-    # it only works well for initial inputs that exist in the database...
+prompts = [
+    "p1201r12p1202r12",
+    # These ones generate complete nonsense. Just plasters a bunch of footholds
+    # on. It seems like it only works well for initial inputs that exist in the
+    # database...
+    "p1128r12p1462r15p1458r15",
+    "p1383r14"
+]
 
-    out = generator("p1201r12p1202r12", do_sample=True, num_beams=1)[0]
-    out = out['generated_text'].replace(" ", "")
+for prompt in prompts:
+    print("> " + prompt)
 
-    print(out)
-    print()
+    for _n in range(5):
+        out = generator(prompt, do_sample=True, num_beams=1)[0]
+        out = out["generated_text"].replace(" ", "")
+
+        print(out)
