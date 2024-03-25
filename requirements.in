@@ -1,0 +1,15 @@
+tokenizers
+datasets==2.16
+transformers[torch]
+tensorboardX
+tensorboard
+tensorflow
+
+# dev
+pytest
+pytest-cov
+ruff
+black
+isort
+pandas
+ipykernel
