@@ -43,7 +43,7 @@ tokenizer = Tokenizer(models.WordLevel(unk_token="[UNK]"))
 tokenizer.enable_padding(length=max_length)
 tokenizer.enable_truncation(max_length=max_length)
 tokenizer.add_special_tokens(special_tokens)
-tokenizer.pre_tokenizer = pre_tokenizers.Split(Regex(r"p\d+|r\d+"), behavior="isolated")
+tokenizer.pre_tokenizer = pre_tokenizers.Split(Regex(r"p\d+r\d+"), behavior="isolated")
 
 batch_size = 1000
 
