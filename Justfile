@@ -1,4 +1,4 @@
-module_dir := "mlm"
+module_dir := "src"
 
 alias t := test
 python3 := "venv/bin/python3"
