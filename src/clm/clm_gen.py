@@ -1,13 +1,12 @@
 import pprint
 
-from transformers import AutoTokenizer, BertLMHeadModel, BertConfig, pipeline
+from transformers import AutoTokenizer, GPT2LMHeadModel, GPT2Config, pipeline
 
 model_dir = "clm-model"
 
 tokenizer = AutoTokenizer.from_pretrained(model_dir)
-config = BertConfig.from_pretrained(model_dir)
-config.is_decoder = True
-model = BertLMHeadModel.from_pretrained(model_dir)
+config = GPT2Config.from_pretrained(model_dir)
+model = GPT2LMHeadModel.from_pretrained(model_dir)
 
 generator = pipeline("text-generation", model=model, tokenizer=tokenizer)
 

@@ -7,8 +7,8 @@ from datasets import Features, Value, load_dataset
 from transformers import (
     TrainingArguments,
     PreTrainedTokenizerFast,
-    BertConfig,
-    BertLMHeadModel,
+    GPT2Config,
+    GPT2LMHeadModel,
     DataCollatorForLanguageModeling,
     Trainer,
 )
@@ -47,24 +47,11 @@ tokenizer.pre_tokenizer = pre_tokenizers.Split(Regex(r"p\d+r\d+"), behavior="iso
 
 batch_size = 1000
 
-
 def batch_iterator():
     for i in range(0, len(datasets["train"]), batch_size):
         yield datasets["train"][i : i + batch_size]["frames"]
 
-
 tokenizer.train_from_iterator(batch_iterator(), trainer=trainer)
-
-cls_token_id = tokenizer.token_to_id("[CLS]")
-sep_token_id = tokenizer.token_to_id("[SEP]")
-tokenizer.post_processor = TemplateProcessing(
-    single="[CLS]:0 $A:0 [SEP]:0",
-    pair="[CLS]:0 $A:0 [SEP]:0 $B:1 [SEP]:1",
-    special_tokens=[
-        ("[CLS]", cls_token_id),
-        ("[SEP]", sep_token_id),
-    ],
-)
 
 pprint.pprint(tokenizer.get_vocab())
 pprint.pprint(tokenizer.encode("p1596r15p1597r14").tokens)
@@ -110,16 +97,38 @@ data_collator = DataCollatorForLanguageModeling(
 
 next_power_of_2 = lambda n: 2 ** (n - 1).bit_length()
 
-model_config = BertConfig(
-    hidden_size=384,  # 786 default
-    intermediate_size=1536,  # 3072 default
-    max_position_embeddings=256,  # 512 default
-    num_attention_heads=4,  # 12 default
-    num_hidden_layers=4,  # default 6
-    vocab_size=next_power_of_2(tokenizer_pretrained.vocab_size),
-    is_decoder=True
-)
-model = BertLMHeadModel(config=model_config)
+model_config = GPT2Config(**{
+#   "activation_function": "gelu_new",
+#   "attn_pdrop": 0.1,
+#   "bos_token_id": 50256,
+#   "embd_pdrop": 0.1,
+#   "eos_token_id": 50256,
+#   "initializer_range": 0.02,
+#   "layer_norm_epsilon": 1e-05,
+#   "model_type": "gpt2",
+#   "n_embd": 768,
+    "n_embd": 192,
+#   "n_head": 12,
+    "n_head": 3,
+#   "n_inner": null,
+#   "n_layer": 12,
+    "n_layer": 3,
+#   "n_positions": 1024,
+    "n_positions": 256,
+#   "reorder_and_upcast_attn": false,
+#   "resid_pdrop": 0.1,
+#   "scale_attn_by_inverse_layer_idx": false,
+#   "scale_attn_weights": true,
+#   "summary_activation": null,
+#   "summary_first_dropout": 0.1,
+#   "summary_proj_to_labels": true,
+#   "summary_type": "cls_index",
+#   "summary_use_proj": true,
+#   "transformers_version": "4.39.1",
+#   "use_cache": true,
+#   "vocab_size": 50257
+})
+model = GPT2LMHeadModel(config=model_config)
 
 print(model.num_parameters())
 
