@@ -36,17 +36,30 @@ pprint.pprint(datasets["train"][0])
 
 max_length = 48
 
-special_tokens = ["[UNK]", "[PAD]", "[CLS]", "[SEP]", "[MASK]"]
-trainer = WordLevelTrainer(special_tokens=special_tokens)
+special_tokens = {
+    "bos": "<s>",
+    "eos": "</s>",
+    "unk": "<unk>",
+    "pad": "<pad>"
+}
 
-tokenizer = Tokenizer(models.WordLevel(unk_token="[UNK]"))
-tokenizer.enable_padding(length=max_length)
+trainer = WordLevelTrainer(special_tokens=list(special_tokens.values()))
+
+tokenizer = Tokenizer(models.WordLevel(unk_token=special_tokens['unk']))
+tokenizer.enable_padding(length=max_length, pad_token=special_tokens['pad'])
 tokenizer.enable_truncation(max_length=max_length)
-tokenizer.add_special_tokens(special_tokens)
+tokenizer.add_special_tokens(list(special_tokens.values()))
 tokenizer.pre_tokenizer = pre_tokenizers.Split(Regex(r"p\d+r\d+"), behavior="isolated")
 
-batch_size = 1000
+bos_token_id = tokenizer.token_to_id(special_tokens['bos'])
+eos_token_id = tokenizer.token_to_id(special_tokens['eos'])
 
+tokenizer.post_processor = TemplateProcessing(
+    single=special_tokens['bos'] + " $A " + special_tokens['eos'],
+    special_tokens=[(special_tokens['eos'], eos_token_id), (special_tokens['bos'], bos_token_id)],
+)
+
+batch_size = 1000
 
 def batch_iterator():
     for i in range(0, len(datasets["train"]), batch_size):
@@ -66,11 +79,8 @@ tokenizer_pretrained = PreTrainedTokenizerFast(
     model_max_length=max_length,
     padding_side="right",
     truncation_side="right",
-    unk_token="[UNK]",
-    sep_token="[SEP]",
-    pad_token="[PAD]",
-    cls_token="[CLS]",
-    mask_token="[MASK]",
+    unk_token=special_tokens['unk'],
+    pad_token=special_tokens['pad'],
 )
 
 tokenizer_pretrained.save_pretrained(out_dir)
@@ -104,8 +114,10 @@ model_config = GPT2Config(
         #   "activation_function": "gelu_new",
         #   "attn_pdrop": 0.1,
         #   "bos_token_id": 50256,
+        "bos_token_id": bos_token_id,
         #   "embd_pdrop": 0.1,
         #   "eos_token_id": 50256,
+        "eos_token_id": eos_token_id,
         #   "initializer_range": 0.02,
         #   "layer_norm_epsilon": 1e-05,
         #   "model_type": "gpt2",
@@ -130,6 +142,7 @@ model_config = GPT2Config(
         #   "transformers_version": "4.39.1",
         #   "use_cache": true,
         #   "vocab_size": 50257
+        "vocab_size": next_power_of_2(tokenizer.get_vocab_size())
     }
 )
 model = GPT2LMHeadModel(config=model_config)
@@ -142,7 +155,7 @@ training_args = TrainingArguments(
     overwrite_output_dir=True,
     num_train_epochs=2,  # number of training epochs, feel free to tweak
     per_device_train_batch_size=8,  # the training batch size, put it as high as your GPU memory fits
-    gradient_accumulation_steps=8,  # accumulating the gradients before updating the weights
+    gradient_accumulation_steps=1,  # accumulating the gradients before updating the weights
     per_device_eval_batch_size=64,  # evaluation batch size
     logging_steps=50,  # evaluate, log and save model checkpoints every 1000 step
     save_steps=100,
