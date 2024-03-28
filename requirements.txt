@@ -60,6 +60,10 @@ filelock==3.13.1
     #   torch
     #   transformers
 flask==3.0.2
+    # via
+    #   -r requirements.in
+    #   flask-cors
+flask-cors==4.0.0
     # via -r requirements.in
 flatbuffers==24.3.7
     # via tensorflow

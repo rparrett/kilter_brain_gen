@@ -1,5 +1,6 @@
 from uuid import uuid4
 from flask import Flask
+from flask_cors import CORS, cross_origin
 import pprint
 import re
 
@@ -73,9 +74,11 @@ def remove_and_get_non_pr(output):
 
 
 app = Flask(__name__)
-
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 @app.route("/generate/<prompt>")
+@cross_origin()
 def generate(prompt):
     result = generator(prompt, do_sample=True, num_beams=1)[0]
     (out, _non_pr) = remove_and_get_non_pr(result["generated_text"])
