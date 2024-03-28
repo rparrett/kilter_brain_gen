@@ -3,7 +3,7 @@ import re
 
 from transformers import AutoTokenizer, GPT2LMHeadModel, GPT2Config, pipeline
 
-checkpoint = None # "17900"
+checkpoint = None  # "17900"
 
 token_dir = "clm-model"
 model_dir = token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
@@ -17,15 +17,17 @@ generator = pipeline(
 )
 
 prompts = [
-    "a20 d20", # v5 at 20 degrees
-    "a40 d15" # v2 at 40 degrees
+    "a20 d20",  # v5 at 20 degrees
+    "a40 d15",  # v2 at 40 degrees
 ]
+
 
 def remove_non_pr(match):
     non_pr.append(match.group(1))
     return ""
 
-for (pn, prompt) in enumerate(prompts):
+
+for pn, prompt in enumerate(prompts):
     for n in range(5):
         out = generator(prompt, do_sample=True, num_beams=1)[0]
 
@@ -34,6 +36,16 @@ for (pn, prompt) in enumerate(prompts):
 
         out = out.replace(" ", "")
 
-        out = model_dir + "." + str(pn) + "." + str(n) + "." + ".".join(non_pr) + "," + out
+        out = (
+            model_dir
+            + "."
+            + str(pn)
+            + "."
+            + str(n)
+            + "."
+            + ".".join(non_pr)
+            + ","
+            + out
+        )
 
         print(out)

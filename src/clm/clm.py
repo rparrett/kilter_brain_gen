@@ -20,7 +20,7 @@ features = Features(
         "frames": Value("string"),
         "display_difficulty": Value("float"),
         "quality_average": Value("float"),
-        "angle": Value("string")
+        "angle": Value("string"),
     }
 )
 
@@ -28,11 +28,17 @@ dataset = load_dataset(
     "csv", data_files="climbs.csv", delimiter=",", features=features, split="train"
 )
 
+
 def add_prefix(example):
     a = "unk" if example["angle"] is None else example["angle"]
-    d = "unk" if example["display_difficulty"] is None else str(round(example["display_difficulty"]))
+    d = (
+        "unk"
+        if example["display_difficulty"] is None
+        else str(round(example["display_difficulty"]))
+    )
     example["frames"] = "a" + a + " " + "d" + d + " " + example["frames"]
     return example
+
 
 dataset = dataset.map(add_prefix)
 
@@ -45,30 +51,31 @@ pprint.pprint(datasets["train"][0])
 
 max_length = 48
 
-special_tokens = {
-    "bos": "<s>",
-    "eos": "</s>",
-    "unk": "<unk>",
-    "pad": "<pad>"
-}
+special_tokens = {"bos": "<s>", "eos": "</s>", "unk": "<unk>", "pad": "<pad>"}
 
 trainer = WordLevelTrainer(special_tokens=list(special_tokens.values()))
 
-tokenizer = Tokenizer(models.WordLevel(unk_token=special_tokens['unk']))
-tokenizer.enable_padding(length=max_length, pad_token=special_tokens['pad'])
+tokenizer = Tokenizer(models.WordLevel(unk_token=special_tokens["unk"]))
+tokenizer.enable_padding(length=max_length, pad_token=special_tokens["pad"])
 tokenizer.enable_truncation(max_length=max_length)
 tokenizer.add_special_tokens(list(special_tokens.values()))
-tokenizer.pre_tokenizer = pre_tokenizers.Split(Regex(r"(?: |p\d+r\d+)"), behavior="isolated")
+tokenizer.pre_tokenizer = pre_tokenizers.Split(
+    Regex(r"(?: |p\d+r\d+)"), behavior="isolated"
+)
 
-bos_token_id = tokenizer.token_to_id(special_tokens['bos'])
-eos_token_id = tokenizer.token_to_id(special_tokens['eos'])
+bos_token_id = tokenizer.token_to_id(special_tokens["bos"])
+eos_token_id = tokenizer.token_to_id(special_tokens["eos"])
 
 tokenizer.post_processor = TemplateProcessing(
-    single=special_tokens['bos'] + " $A " + special_tokens['eos'],
-    special_tokens=[(special_tokens['eos'], eos_token_id), (special_tokens['bos'], bos_token_id)],
+    single=special_tokens["bos"] + " $A " + special_tokens["eos"],
+    special_tokens=[
+        (special_tokens["eos"], eos_token_id),
+        (special_tokens["bos"], bos_token_id),
+    ],
 )
 
 batch_size = 1000
+
 
 def batch_iterator():
     for i in range(0, len(datasets["train"]), batch_size):
@@ -88,8 +95,8 @@ tokenizer_pretrained = PreTrainedTokenizerFast(
     model_max_length=max_length,
     padding_side="right",
     truncation_side="right",
-    unk_token=special_tokens['unk'],
-    pad_token=special_tokens['pad'],
+    unk_token=special_tokens["unk"],
+    pad_token=special_tokens["pad"],
 )
 
 tokenizer_pretrained.save_pretrained(out_dir)
@@ -151,7 +158,7 @@ model_config = GPT2Config(
         #   "transformers_version": "4.39.1",
         #   "use_cache": true,
         #   "vocab_size": 50257
-        "vocab_size": next_power_of_2(tokenizer.get_vocab_size())
+        "vocab_size": next_power_of_2(tokenizer.get_vocab_size()),
     }
 )
 model = GPT2LMHeadModel(config=model_config)
