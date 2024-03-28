@@ -54,4 +54,4 @@ export FLASK_APP := "src/api/api.py"
   venv/bin/tensorboard --logdir=climbbert
 
 @flask *options: venv deps
-  venv/bin/flask run --host=0.0.0.0 --port=5001 --debug
+  venv/bin/flask run --host=0.0.0.0 --port=5001
