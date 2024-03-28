@@ -29,8 +29,9 @@ dataset = load_dataset(
 )
 
 def add_prefix(example):
-    a = "" if example["angle"] is None else example["angle"]
-    example["frames"] = "a" + a + " " + example["frames"]
+    a = "unk" if example["angle"] is None else example["angle"]
+    d = "unk" if example["display_difficulty"] is None else str(round(example["display_difficulty"]))
+    example["frames"] = "a" + a + " " + "d" + d + " " + example["frames"]
     return example
 
 dataset = dataset.map(add_prefix)
@@ -57,7 +58,7 @@ tokenizer = Tokenizer(models.WordLevel(unk_token=special_tokens['unk']))
 tokenizer.enable_padding(length=max_length, pad_token=special_tokens['pad'])
 tokenizer.enable_truncation(max_length=max_length)
 tokenizer.add_special_tokens(list(special_tokens.values()))
-tokenizer.pre_tokenizer = pre_tokenizers.Split(Regex(r"p\d+r\d+"), behavior="isolated")
+tokenizer.pre_tokenizer = pre_tokenizers.Split(Regex(r"(?: |p\d+r\d+)"), behavior="isolated")
 
 bos_token_id = tokenizer.token_to_id(special_tokens['bos'])
 eos_token_id = tokenizer.token_to_id(special_tokens['eos'])
