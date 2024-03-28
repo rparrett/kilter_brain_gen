@@ -36,7 +36,7 @@ def add_prefix(example):
         if example["display_difficulty"] is None
         else str(round(example["display_difficulty"]))
     )
-    example["frames"] = "a" + a + " " + "d" + d + " " + example["frames"]
+    example["frames"] = "a" + a + "d" + d + example["frames"]
     return example
 
 
@@ -60,7 +60,7 @@ tokenizer.enable_padding(length=max_length, pad_token=special_tokens["pad"])
 tokenizer.enable_truncation(max_length=max_length)
 tokenizer.add_special_tokens(list(special_tokens.values()))
 tokenizer.pre_tokenizer = pre_tokenizers.Split(
-    Regex(r"(?: |p\d+r\d+)"), behavior="isolated"
+    Regex(r"([ad]\d+|p\d+r\d+)"), behavior="isolated"
 )
 
 bos_token_id = tokenizer.token_to_id(special_tokens["bos"])
@@ -87,6 +87,7 @@ tokenizer.train_from_iterator(batch_iterator(), trainer=trainer)
 pprint.pprint(tokenizer.get_vocab())
 pprint.pprint(tokenizer.encode("p1596r15p1597r14").tokens)
 pprint.pprint(tokenizer.encode("p1595r15p1596r12").tokens)
+pprint.pprint(tokenizer.encode("a40d15p1595r15p1596r12").tokens)
 
 # Train Model
 
@@ -169,11 +170,11 @@ training_args = TrainingArguments(
     output_dir=out_dir,  # output directory to where save model checkpoint
     evaluation_strategy="steps",  # evaluate each `logging_steps` steps
     overwrite_output_dir=True,
-    num_train_epochs=1,  # number of training epochs, feel free to tweak
+    num_train_epochs=2,  # number of training epochs, feel free to tweak
     per_device_train_batch_size=8,  # the training batch size, put it as high as your GPU memory fits
     gradient_accumulation_steps=1,  # accumulating the gradients before updating the weights
     per_device_eval_batch_size=64,  # evaluation batch size
-    logging_steps=50,  # evaluate, log and save model checkpoints every 1000 step
+    logging_steps=200,  # evaluate, log and save model checkpoints every 1000 step
     save_steps=1000,
     report_to="tensorboard",
     remove_unused_columns=False,
