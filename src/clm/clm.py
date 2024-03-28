@@ -20,12 +20,20 @@ features = Features(
         "frames": Value("string"),
         "display_difficulty": Value("float"),
         "quality_average": Value("float"),
+        "angle": Value("string")
     }
 )
 
 dataset = load_dataset(
     "csv", data_files="climbs.csv", delimiter=",", features=features, split="train"
 )
+
+def add_prefix(example):
+    a = "" if example["angle"] is None else example["angle"]
+    example["frames"] = "a" + a + " " + example["frames"]
+    return example
+
+dataset = dataset.map(add_prefix)
 
 datasets = dataset.train_test_split()
 
@@ -95,10 +103,10 @@ tokenized_test = datasets["test"].map(
 )
 
 tokenized_train = tokenized_train.remove_columns(
-    ["frames", "display_difficulty", "quality_average"]
+    ["frames", "display_difficulty", "quality_average", "angle"]
 )
 tokenized_test = tokenized_test.remove_columns(
-    ["frames", "display_difficulty", "quality_average"]
+    ["frames", "display_difficulty", "quality_average", "angle"]
 )
 
 pprint.pprint(tokenized_train[0])
@@ -153,12 +161,12 @@ training_args = TrainingArguments(
     output_dir=out_dir,  # output directory to where save model checkpoint
     evaluation_strategy="steps",  # evaluate each `logging_steps` steps
     overwrite_output_dir=True,
-    num_train_epochs=2,  # number of training epochs, feel free to tweak
+    num_train_epochs=1,  # number of training epochs, feel free to tweak
     per_device_train_batch_size=8,  # the training batch size, put it as high as your GPU memory fits
     gradient_accumulation_steps=1,  # accumulating the gradients before updating the weights
     per_device_eval_batch_size=64,  # evaluation batch size
     logging_steps=50,  # evaluate, log and save model checkpoints every 1000 step
-    save_steps=100,
+    save_steps=1000,
     report_to="tensorboard",
     remove_unused_columns=False,
     load_best_model_at_end=True,  # whether to load the best model (in terms of loss) at the end of training

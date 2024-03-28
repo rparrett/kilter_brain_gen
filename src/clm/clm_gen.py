@@ -1,32 +1,32 @@
 import pprint
+import re
 
 from transformers import AutoTokenizer, GPT2LMHeadModel, GPT2Config, pipeline
 
-model_dir = "clm-model"
-checkpoint = "/checkpoint-6300"
+checkpoint = "17900"
 
-tokenizer = AutoTokenizer.from_pretrained(model_dir)
-config = GPT2Config.from_pretrained(model_dir + checkpoint)
-model = GPT2LMHeadModel.from_pretrained(model_dir + checkpoint)
+token_dir = "clm-model"
+model_dir = token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
+
+tokenizer = AutoTokenizer.from_pretrained(token_dir)
+config = GPT2Config.from_pretrained(model_dir)
+model = GPT2LMHeadModel.from_pretrained(model_dir)
 
 generator = pipeline(
     "text-generation", model=model, tokenizer=tokenizer, max_new_tokens=20
 )
 
 prompts = [
-    "p1201r12p1202r12",
-    # This one generates complete nonsense. Just plasters a bunch of footholds
-    # on. It seems like it only works well for initial inputs that exist in the
-    # database...
-    "p1128r12p1462r15p1458r15",
-    "p1383r14"
+    "a10 p1201r12p1202r12",
+    "a40 p1201r12p1202r12",
+    "a60 p1201r12p1202r12",
 ]
 
-for prompt in prompts:
-    print("> " + prompt)
-
-    for _n in range(5):
+for (pn, prompt) in enumerate(prompts):
+    for n in range(5):
         out = generator(prompt, do_sample=True, num_beams=1)[0]
         out = out["generated_text"].replace(" ", "")
+        out = re.sub(r"^a(\d+)", "", out)
+        out = model_dir + "." + str(pn) + "." + str(n) + "," + out
 
         print(out)

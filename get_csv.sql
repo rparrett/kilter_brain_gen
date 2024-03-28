@@ -3,7 +3,7 @@
 .output climbs.csv
 
 SELECT
-    `name`, `setter_username`, `description`, `frames`,
+    `name`, `setter_username`, `description`, `angle`, `frames`,
     `climb_cache_fields`.`display_difficulty`,
     `climb_cache_fields`.`quality_average`
 FROM climbs
