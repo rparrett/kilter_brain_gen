@@ -3,6 +3,8 @@ module_dir := "src"
 alias t := test
 python3 := "venv/bin/python3"
 
+export FLASK_APP := "src/api/api.py"
+
 @default: test lint
 
 @test *options:
@@ -50,3 +52,6 @@ python3 := "venv/bin/python3"
 
 @tensorboard: venv deps
   venv/bin/tensorboard --logdir=climbbert
+
+@flask *options: venv deps
+  venv/bin/flask run --host=0.0.0.0 --port=5001 --debug

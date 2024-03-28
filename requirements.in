@@ -5,6 +5,9 @@ tensorboardX
 tensorboard
 tensorflow
 
+# api
+flask
+
 # dev
 pytest
 pytest-cov
