@@ -4,7 +4,7 @@ import time
 
 from transformers import GPT2TokenizerFast, GPT2LMHeadModel, GPT2Config, pipeline
 
-checkpoint = "21000"
+checkpoint = "23000"
 
 token_dir = "name-model"
 model_dir = token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
@@ -22,6 +22,9 @@ generator = pipeline(
 )
 
 params = [
+    {
+        "do_sample": True,
+    },
     {
         "do_sample": True,
         "top_k": 25,
