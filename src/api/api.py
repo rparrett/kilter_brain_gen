@@ -75,7 +75,8 @@ def remove_and_get_non_pr(output):
 
 app = Flask(__name__)
 cors = CORS(app)
-app.config['CORS_HEADERS'] = 'Content-Type'
+app.config["CORS_HEADERS"] = "Content-Type"
+
 
 @app.route("/generate/<prompt>")
 @cross_origin()
