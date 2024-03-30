@@ -1,9 +1,9 @@
-import pprint
 import re
 
-from transformers import AutoTokenizer, GPT2LMHeadModel, GPT2Config, pipeline
+import torch
+from transformers import AutoTokenizer, GPT2Config, GPT2LMHeadModel, pipeline
 
-checkpoint = None  # "17900"
+checkpoint = "2000"  # "17900"
 
 token_dir = "clm-model"
 model_dir = token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
@@ -29,8 +29,11 @@ def remove_non_pr(match):
 
 for pn, prompt in enumerate(prompts):
     for n in range(5):
-        out = generator(prompt, do_sample=True, num_beams=1)[0]
+        encoded = tokenizer(prompt, return_tensors="pt", return_attention_mask=True)
+        with torch.no_grad():
+            model_output = model(encoded["input_ids"], output_hidden_states=True)
 
+        out = generator(prompt, do_sample=True, num_beams=1)[0]
         non_pr = []
         out = re.sub(r"([^pr\d]\d+)", remove_non_pr, out["generated_text"])
 
