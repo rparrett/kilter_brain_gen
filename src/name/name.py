@@ -23,6 +23,11 @@ dataset = load_dataset(
 )
 dataset = dataset.filter(lambda example: example["name"] != None)
 
+def wrap(example):
+    example["name"] = "<|endoftext|>" + example["name"] + "<|endoftext|>"
+    return example
+
+dataset = dataset.map(wrap)
 
 datasets = dataset.train_test_split()
 
@@ -38,6 +43,9 @@ tokenized_train = datasets["train"].map(
 tokenized_test = datasets["test"].map(
     lambda examples: tokenizer(examples["name"]), batched=True
 )
+
+pprint.pprint(datasets["train"][0])
+pprint.pprint(tokenized_train[0])
 
 tokenized_train = tokenized_train.remove_columns(["name"])
 tokenized_test = tokenized_test.remove_columns(["name"])
