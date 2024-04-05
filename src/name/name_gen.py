@@ -13,10 +13,6 @@ tokenizer = GPT2TokenizerFast.from_pretrained('gpt2', bos_token='<|startoftext|>
 config = GPT2Config.from_pretrained("gpt2")
 model = GPT2LMHeadModel.from_pretrained(model_dir)
 
-tokenizer.pad_token=tokenizer.eos_token
-tokenizer.pad_token_id=tokenizer.eos_token_id
-tokenizer.padding_side = "left"
-
 generator = pipeline(
     "text-generation", model=model, tokenizer=tokenizer, max_new_tokens=20
 )
