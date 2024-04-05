@@ -9,7 +9,7 @@ checkpoint = "5000"
 token_dir = "name-model"
 model_dir = token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
 
-tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
+tokenizer = GPT2TokenizerFast.from_pretrained('gpt2', bos_token='<|startoftext|>', eos_token='<|endoftext|>', pad_token='<|pad|>')
 config = GPT2Config.from_pretrained("gpt2")
 model = GPT2LMHeadModel.from_pretrained(model_dir)
 
@@ -65,7 +65,7 @@ for p in params:
 
     start = time.time()
     for _ in range(5):
-        out = generator("", **p, prefix=tokenizer.bos_token)[0]['generated_text']
+        out = generator("<|startoftext|>", **p)[0]['generated_text']
         print("  " + out)
     end = time.time()
     print("%.2fms" % ((end - start) * 1000))

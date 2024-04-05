@@ -18,13 +18,14 @@ features = Features(
     }
 )
 
+
 dataset = load_dataset(
     "csv", data_files="climbs.csv", delimiter=",", features=features, split="train"
 )
 dataset = dataset.filter(lambda example: example["name"] != None)
 
 def wrap(example):
-    example["name"] = "<|endoftext|>" + example["name"] + "<|endoftext|>"
+    example["name"] = "<|startoftext|>" + example["name"] + "<|endoftext|>"
     return example
 
 dataset = dataset.map(wrap)
@@ -33,9 +34,8 @@ datasets = dataset.train_test_split()
 
 config = GPT2Config.from_pretrained("gpt2")
 model = GPT2LMHeadModel.from_pretrained("gpt2", config=config)
-tokenizer = GPT2TokenizerFast.from_pretrained("gpt2")
-tokenizer.pad_token=tokenizer.eos_token
-tokenizer.pad_token_id=tokenizer.eos_token_id
+tokenizer = GPT2TokenizerFast.from_pretrained('gpt2', bos_token='<|startoftext|>', eos_token='<|endoftext|>', pad_token='<|pad|>')
+model.resize_token_embeddings(len(tokenizer))
 
 tokenized_train = datasets["train"].map(
     lambda examples: tokenizer(examples["name"]), batched=True
@@ -62,8 +62,8 @@ training_args = TrainingArguments(
     per_device_train_batch_size=4,  # the training batch size, put it as high as your GPU memory fits
     gradient_accumulation_steps=1,  # accumulating the gradients before updating the weights
     per_device_eval_batch_size=8,  # evaluation batch size
-    logging_steps=1000,  # evaluate, log and save model checkpoints every 1000 step
-    save_steps=1000,
+    logging_steps=500,  # evaluate, log and save model checkpoints every 1000 step
+    save_steps=500,
     report_to="tensorboard",
     remove_unused_columns=False,
     load_best_model_at_end=True,  # whether to load the best model (in terms of loss) at the end of training
