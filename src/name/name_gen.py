@@ -55,10 +55,13 @@ for p in params:
     pprint.pprint(p);
     print()
 
+    p['prefix'] = "<|startoftext|>"
+
     start = time.time()
     for _ in range(5):
-        out = generator("<|startoftext|>", **p)[0]['generated_text']
+        out = generator("", **p)[0]['generated_text']
         print("  " + out)
     end = time.time()
-    print("%.2fms" % ((end - start) * 1000))
+    print()
+    print("  %.2fms" % ((end - start) * 1000))
     print()
