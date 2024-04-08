@@ -36,7 +36,7 @@ class Handler(FileSystemEventHandler):
                 },
                 {
                     "do_sample": True,
-                    "top_k": 50,
+                    "top_k": 25,
                     "temperature": 0.2
                 },
                 {
@@ -51,10 +51,6 @@ class Handler(FileSystemEventHandler):
                 {
                     "do_sample": True,
                     "num_beams": 4
-                },
-                {
-                    "do_sample": False,
-                    "num_beams": 1
                 },
             ]
 
