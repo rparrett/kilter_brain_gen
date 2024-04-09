@@ -31,16 +31,6 @@ class Handler(FileSystemEventHandler):
                 {
                     "do_sample": True,
                     "top_k": 25,
-                    "temperature": 0.2
-                },
-                {
-                    "do_sample": True,
-                    "top_k": 50,
-                    "temperature": 0.2
-                },
-                {
-                    "do_sample": True,
-                    "top_k": 25,
                     "temperature": 0.8
                 },
                 {
