@@ -1,15 +1,19 @@
 import pprint
 import re
 import time
+from rich.console import Console
+from rich.pretty import pprint
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from transformers import GPT2TokenizerFast, GPT2LMHeadModel, GPT2Config, pipeline
+
+console = Console()
 
 class Handler(FileSystemEventHandler):
     @staticmethod
     def on_any_event(event):
         if event.is_directory and event.event_type == 'created':
-            print(event.src_path)
+            console.print(event.src_path, style="black on white")
             print()
 
             time.sleep(1)
@@ -55,7 +59,7 @@ class Handler(FileSystemEventHandler):
             ]
 
             for p in params:
-                pprint.pprint(p);
+                pprint(p);
                 print()
 
                 p['prefix'] = "<|startoftext|>"
@@ -63,10 +67,10 @@ class Handler(FileSystemEventHandler):
                 start = time.time()
                 for _ in range(5):
                     out = generator("", **p)[0]['generated_text']
-                    print("  " + out)
+                    print(out)
                 end = time.time()
                 print()
-                print("  %.2fms" % ((end - start) * 1000))
+                console.print("%.2fms" % ((end - start) * 1000), style="cyan")
                 print()
 
 

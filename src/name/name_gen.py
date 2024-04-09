@@ -2,9 +2,13 @@ import pprint
 import re
 import time
 
+from rich.console import Console
+from rich.pretty import pprint
 from transformers import GPT2TokenizerFast, GPT2LMHeadModel, GPT2Config, pipeline
 
-checkpoint = "5000"
+console = Console()
+
+checkpoint = "7500"
 
 token_dir = "name-model"
 model_dir = token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
@@ -52,7 +56,7 @@ params = [
 ]
 
 for p in params:
-    pprint.pprint(p);
+    pprint(p);
     print()
 
     p['prefix'] = "<|startoftext|>"
@@ -60,8 +64,8 @@ for p in params:
     start = time.time()
     for _ in range(5):
         out = generator("", **p)[0]['generated_text']
-        print("  " + out)
+        print(out)
     end = time.time()
     print()
-    print("  %.2fms" % ((end - start) * 1000))
+    console.print("%.2fms" % ((end - start) * 1000), style="cyan")
     print()
