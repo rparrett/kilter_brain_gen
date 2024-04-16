@@ -59,6 +59,8 @@ filelock==3.13.1
     #   huggingface-hub
     #   torch
     #   transformers
+fire==0.6.0
+    # via randomname
 flask==3.0.2
     # via
     #   -r requirements.in
@@ -248,10 +250,13 @@ pyzmq==25.1.2
     # via
     #   ipykernel
     #   jupyter-client
+randomname==0.2.1
+    # via -r requirements.in
 regex==2023.12.25
     # via transformers
 requests==2.31.0
     # via
+    #   -r requirements.in
     #   datasets
     #   fsspec
     #   huggingface-hub
@@ -269,6 +274,7 @@ six==1.16.0
     # via
     #   asttokens
     #   astunparse
+    #   fire
     #   google-pasta
     #   python-dateutil
     #   tensorboard
@@ -290,7 +296,9 @@ tensorflow==2.16.1
 tensorflow-io-gcs-filesystem==0.36.0
     # via tensorflow
 termcolor==2.4.0
-    # via tensorflow
+    # via
+    #   fire
+    #   tensorflow
 tokenizers==0.15.2
     # via
     #   -r requirements.in

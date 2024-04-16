@@ -1,22 +1,48 @@
 from uuid import uuid4
-from flask import Flask
+from flask import Flask, request
 from flask_cors import CORS, cross_origin
 import pprint
 import re
+import json
+import requests
+import randomname
+import os.path
 
-from transformers import AutoTokenizer, GPT2LMHeadModel, GPT2Config, pipeline
+from transformers import AutoTokenizer, GPT2LMHeadModel, GPT2Config, GPT2TokenizerFast, pipeline
 
-checkpoint = None  # "17900"
-token_dir = "clm-model"
-model_dir = token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
+def get_frames_generator():
+    checkpoint = "2800"
+    token_dir = "clm-model"
+    model_dir = token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
 
-tokenizer = AutoTokenizer.from_pretrained(token_dir)
-config = GPT2Config.from_pretrained(model_dir)
-model = GPT2LMHeadModel.from_pretrained(model_dir)
+    tokenizer = AutoTokenizer.from_pretrained(token_dir)
+    config = GPT2Config.from_pretrained(model_dir)
+    model = GPT2LMHeadModel.from_pretrained(model_dir)
 
-generator = pipeline(
-    "text-generation", model=model, tokenizer=tokenizer, max_new_tokens=20
-)
+    generator = pipeline(
+        "text-generation", model=model, tokenizer=tokenizer, max_new_tokens=20
+    )
+
+    return generator
+
+def get_name_generator():
+    checkpoint = "1100"
+
+    token_dir = "name-model"
+    model_dir = token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
+
+    tokenizer = GPT2TokenizerFast.from_pretrained('gpt2', bos_token='<|startoftext|>', eos_token='<|endoftext|>', pad_token='<|pad|>')
+    config = GPT2Config.from_pretrained("gpt2")
+    model = GPT2LMHeadModel.from_pretrained(model_dir)
+
+    generator = pipeline(
+        "text-generation", model=model, tokenizer=tokenizer, max_new_tokens=20
+    )
+
+    return generator
+
+generator = get_frames_generator()
+# name_generator = get_name_generator()
 
 difficulties = {
     "1": "1a/V0",
@@ -95,11 +121,58 @@ def generate(prompt):
             a = thing[1:]
             a = None if a == "unk" else int(a)
 
+    # name_params = {
+    #     "do_sample": True,
+    #     "num_beams": 4,
+    #     "prefix": "<|startoftext|>"
+    # }
+
+    # name = name_generator("", **name_params)[0]['generated_text']
+
+    name = randomname.generate()
+
     return {
         "uuid": uuid4().hex,
         "frames": out,
-        "name": "TODO",  # use separate model for this
+        "name": name,
         "description": "beep boop",
         "angle": a,
         "difficulty": d,
     }
+
+@app.route("/publish", methods = ['POST'])
+@cross_origin()
+def publish():
+    data = request.json
+
+    if not os.path.is_file('token.json'):
+        return {'error': 'No stored token'}
+
+    f = open('token.json')
+    token = json.load(f)
+
+    url = 'https://api.kilterboardapp.com/v2/climbs/%s' % data['uuid']
+
+    to_kilter = {
+        "uuid": data['uuid'],
+        "layout_id": 1,
+        "setter_id": token['session']['user_id'],
+        "name": data['name'],
+        "description": data['description'],
+        "is_draft": True,
+        "frames_count": 1,
+        "frames_pace": 0,
+        "frames": data['frames'],
+        "angle": data['angle']
+    }
+
+    res = requests.put(url, json=to_kilter, headers = {
+        "Accept-Encoding": "gzip",
+        "Authorization": "Bearer %s" % token['session']['token'],
+        "User-Agent": "Dalvik/2.1.0 (Linux; U; Android 11; Pixel 2 XL Build/RP1A.201005.004.A1)"
+    })
+
+    pprint.pprint(res)
+    pprint.pprint(res.content)
+
+    return {}

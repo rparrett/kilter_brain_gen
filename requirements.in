@@ -6,6 +6,8 @@ tensorboard
 tensorflow
 
 # api
+randomname
+requests
 flask
 flask-cors
 
