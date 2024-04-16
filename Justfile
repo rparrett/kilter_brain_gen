@@ -15,8 +15,8 @@ export FLASK_APP := "src/api/api.py"
   {{python3}} -m ruff check .
 
 @fmt:
-  {{python3}} -m ruff format {{module_dir}}/ tests/
-  {{python3}} -m isort --profile black --float-to-top {{module_dir}}
+  {{python3}} -m ruff format src/
+  {{python3}} -m isort --profile black --float-to-top src/
 
 @ruff:
   {{python3}} -m ruff check --fix {{module_dir}}/ tests/

@@ -1,14 +1,14 @@
 import pprint
+
 from datasets import Features, Value, load_dataset
 from transformers import (
-    TrainingArguments,
+    DataCollatorForLanguageModeling,
     GPT2Config,
     GPT2LMHeadModel,
     GPT2TokenizerFast,
-    DataCollatorForLanguageModeling,
     Trainer,
+    TrainingArguments,
 )
-
 
 out_dir = "name-model"
 
@@ -24,9 +24,11 @@ dataset = load_dataset(
 )
 dataset = dataset.filter(lambda example: example["name"] != None)
 
+
 def wrap(example):
     example["name"] = "<|startoftext|>" + example["name"] + "<|endoftext|>"
     return example
+
 
 dataset = dataset.map(wrap)
 
@@ -34,7 +36,9 @@ datasets = dataset.train_test_split()
 
 config = GPT2Config.from_pretrained("gpt2")
 model = GPT2LMHeadModel.from_pretrained("gpt2", config=config)
-tokenizer = GPT2TokenizerFast.from_pretrained('gpt2', bos_token='<|startoftext|>', eos_token='<|endoftext|>', pad_token='<|pad|>')
+tokenizer = GPT2TokenizerFast.from_pretrained(
+    "gpt2", bos_token="<|startoftext|>", eos_token="<|endoftext|>", pad_token="<|pad|>"
+)
 model.resize_token_embeddings(len(tokenizer))
 
 tokenized_train = datasets["train"].map(
@@ -68,8 +72,8 @@ training_args = TrainingArguments(
     remove_unused_columns=False,
     load_best_model_at_end=True,  # whether to load the best model (in terms of loss) at the end of training
     save_total_limit=3,  # whether you don't have much space so you let only 3 model weights saved in the disk
-    weight_decay=0.05, # ??? people seem to do this stuff when fine-tuning?
-    learning_rate=2e-6 # ??? people seem to do this stuff when fine-tuning?
+    weight_decay=0.05,  # ??? people seem to do this stuff when fine-tuning?
+    learning_rate=2e-6,  # ??? people seem to do this stuff when fine-tuning?
 )
 
 trainer = Trainer(

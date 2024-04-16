@@ -1,7 +1,7 @@
 import pprint
 import re
 
-from transformers import AutoTokenizer, GPT2LMHeadModel, GPT2Config, pipeline
+from transformers import AutoTokenizer, GPT2Config, GPT2LMHeadModel, pipeline
 
 checkpoint = None  # "17900"
 

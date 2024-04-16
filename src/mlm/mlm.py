@@ -1,16 +1,16 @@
 import pprint
 
-from tokenizers import Tokenizer, Regex, models, pre_tokenizers
-from tokenizers.trainers import WordLevelTrainer
-from tokenizers.processors import TemplateProcessing
 from datasets import Features, Value, load_dataset
+from tokenizers import Regex, Tokenizer, models, pre_tokenizers
+from tokenizers.processors import TemplateProcessing
+from tokenizers.trainers import WordLevelTrainer
 from transformers import (
-    TrainingArguments,
-    PreTrainedTokenizerFast,
     BertConfig,
     BertForMaskedLM,
     DataCollatorForLanguageModeling,
+    PreTrainedTokenizerFast,
     Trainer,
+    TrainingArguments,
 )
 
 out_dir = "mlm-model"
