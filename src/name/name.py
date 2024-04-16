@@ -62,14 +62,14 @@ training_args = TrainingArguments(
     per_device_train_batch_size=4,  # the training batch size, put it as high as your GPU memory fits
     gradient_accumulation_steps=1,  # accumulating the gradients before updating the weights
     per_device_eval_batch_size=8,  # evaluation batch size
-    logging_steps=500,  # evaluate, log and save model checkpoints every 1000 step
-    save_steps=500,
+    logging_steps=50,  # evaluate, log and save model checkpoints every 1000 step
+    save_steps=50,
     report_to="tensorboard",
     remove_unused_columns=False,
     load_best_model_at_end=True,  # whether to load the best model (in terms of loss) at the end of training
     save_total_limit=3,  # whether you don't have much space so you let only 3 model weights saved in the disk
-    weight_decay=0.01, # ??? people seem to do this stuff when fine-tuning?
-    learning_rate=1e-5 # ??? people seem to do this stuff when fine-tuning?
+    weight_decay=0.05, # ??? people seem to do this stuff when fine-tuning?
+    learning_rate=2e-6 # ??? people seem to do this stuff when fine-tuning?
 )
 
 trainer = Trainer(
