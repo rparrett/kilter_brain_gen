@@ -3,7 +3,7 @@ python3 := "venv/bin/python3"
 
 export FLASK_APP := "src/api/api.py"
 
-@default: test lint
+@default: lint
 
 @lint:
   {{python3}} -m black {{module_dir}}/ --check
