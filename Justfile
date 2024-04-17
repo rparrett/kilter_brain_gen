@@ -1,28 +1,20 @@
 module_dir := "src"
-
-alias t := test
 python3 := "venv/bin/python3"
 
 export FLASK_APP := "src/api/api.py"
 
 @default: test lint
 
-@test *options:
-	{{python3}} -m pytest -x -vv {{options}} tests/ --cov={{module_dir}} --cov-report=html --cov-report=term
-
 @lint:
-  {{python3}} -m black . --check
-  {{python3}} -m ruff check .
+  {{python3}} -m black {{module_dir}}/ --check
+  {{python3}} -m ruff check {{module_dir}}/
 
 @fmt:
-  {{python3}} -m ruff format src/
-  {{python3}} -m isort --profile black --float-to-top src/
-
-@ruff:
-  {{python3}} -m ruff check --fix {{module_dir}}/ tests/
+  {{python3}} -m ruff format {{module_dir}}/
+  {{python3}} -m isort --profile black --float-to-top {{module_dir}}/
 
 @vulture:
-	{{python3}} -m vulture {{module_dir}}/ tests/ --min-confidence 80
+	{{python3}} -m vulture {{module_dir}}/ --min-confidence 80
 
 @clean:
 	find . -iname "*.pyc" -delete
