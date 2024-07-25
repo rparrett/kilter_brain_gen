@@ -164,7 +164,7 @@ def generate(prompt):
 def publish():
     data = request.json
 
-    if not os.path.is_file("token.json"):
+    if not os.path.isfile("token.json"):
         return {"error": "No stored token"}
 
     f = open("token.json")
