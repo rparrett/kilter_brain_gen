@@ -14,12 +14,12 @@ export FLASK_APP := "src/api/api.py"
   {{python3}} -m isort --profile black --float-to-top {{module_dir}}/
 
 @vulture:
-	{{python3}} -m vulture {{module_dir}}/ --min-confidence 80
+  {{python3}} -m vulture {{module_dir}}/ --min-confidence 80
 
 @clean:
-	find . -iname "*.pyc" -delete
-	find . -iname '__pycache__' -type d | xargs rm -fr
-	rm -rf .pytest_cache *.egg-info .out
+  find . -iname "*.pyc" -delete
+  find . -iname '__pycache__' -type d | xargs rm -fr
+  rm -rf .pytest_cache *.egg-info .out
 
 @deps:
   test -f requirements.txt || \
@@ -31,7 +31,7 @@ export FLASK_APP := "src/api/api.py"
   {{python3}} -m piptools compile --resolver=backtracking && {{python3}} -m pip install -r requirements.txt)
 
 @mypy:
-	{{python3}} -m mypy --pretty {{module_dir}}/
+  {{python3}} -m mypy --pretty {{module_dir}}/
 
 @isort:
   {{python3}} -m isort --float-to-top {{module_dir}}/
