@@ -11,6 +11,7 @@ INNER JOIN `climb_cache_fields` ON `climb_uuid` = `climbs`.`uuid`
 WHERE
     layout_id = 1 AND
     frames_count = 1 AND
+    is_listed = 1 AND
     `climb_cache_fields`.`display_difficulty` IS NOT NULL AND
     `climb_cache_fields`.`quality_average` IS NOT NULL AND
     frames NOT REGEXP 'p139[6-9]' AND
