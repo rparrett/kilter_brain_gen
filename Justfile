@@ -26,6 +26,11 @@ export FLASK_APP := "src/api/api.py"
   ({{python3}} -m pip install --upgrade pip pip-tools && \
   {{python3}} -m piptools compile --resolver=backtracking && {{python3}} -m pip install -r requirements.txt)
 
+@sync-deps:
+  test -f requirements.txt && \
+  ({{python3}} -m pip install --upgrade pip pip-tools && \
+  {{python3}} -m piptools sync)
+
 @update-deps:
   ({{python3}} -m pip install --upgrade pip pip-tools && \
   {{python3}} -m piptools compile --resolver=backtracking && {{python3}} -m pip install -r requirements.txt)
