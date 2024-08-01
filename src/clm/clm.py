@@ -1,6 +1,6 @@
 import pprint
 
-from datasets import Features, Value, load_dataset
+from clm_data import load_training_datasets, preprocess_datasets
 from tokenizers import Regex, Tokenizer, models, pre_tokenizers
 from tokenizers.processors import TemplateProcessing
 from tokenizers.trainers import WordLevelTrainer
@@ -15,34 +15,7 @@ from transformers import (
 
 out_dir = "clm-model"
 
-features = Features(
-    {
-        "frames": Value("string"),
-        "display_difficulty": Value("float"),
-        "quality_average": Value("float"),
-        "angle": Value("string"),
-    }
-)
-
-dataset = load_dataset(
-    "csv", data_files="climbs.csv", delimiter=",", features=features, split="train"
-)
-
-
-def add_prefix(example):
-    a = "unk" if example["angle"] is None else example["angle"]
-    d = (
-        "unk"
-        if example["display_difficulty"] is None
-        else str(round(example["display_difficulty"]))
-    )
-    example["frames"] = "a" + a + "d" + d + example["frames"]
-    return example
-
-
-dataset = dataset.map(add_prefix)
-
-datasets = dataset.train_test_split()
+datasets = load_training_datasets()
 
 pprint.pprint(datasets)
 pprint.pprint(datasets["train"][0])
@@ -104,27 +77,18 @@ tokenizer_pretrained.save_pretrained(out_dir)
 
 # Tokenize datasets
 
-tokenized_train = datasets["train"].map(
-    lambda examples: tokenizer_pretrained(examples["frames"]), batched=True
-)
-tokenized_test = datasets["test"].map(
-    lambda examples: tokenizer_pretrained(examples["frames"]), batched=True
-)
+preprocess_datasets(datasets, tokenizer_pretrained)
 
-tokenized_train = tokenized_train.remove_columns(
-    ["frames", "display_difficulty", "quality_average", "angle"]
-)
-tokenized_test = tokenized_test.remove_columns(
-    ["frames", "display_difficulty", "quality_average", "angle"]
-)
-
-pprint.pprint(tokenized_train[0])
+pprint.pprint(datasets["train"][0])
 
 data_collator = DataCollatorForLanguageModeling(
     tokenizer=tokenizer_pretrained, mlm=False, mlm_probability=0.15
 )
 
-next_power_of_2 = lambda n: 2 ** (n - 1).bit_length()
+
+def nearest_multiple_of_64(n):
+    return 64 * ((n + 63) // 64)
+
 
 model_config = GPT2Config(
     **{
@@ -159,7 +123,7 @@ model_config = GPT2Config(
         #   "transformers_version": "4.39.1",
         #   "use_cache": true,
         #   "vocab_size": 50257
-        "vocab_size": next_power_of_2(tokenizer.get_vocab_size()),
+        "vocab_size": nearest_multiple_of_64(tokenizer.get_vocab_size()),
     }
 )
 model = GPT2LMHeadModel(config=model_config)
@@ -186,8 +150,8 @@ trainer = Trainer(
     model=model,
     args=training_args,
     data_collator=data_collator,
-    train_dataset=tokenized_train,
-    eval_dataset=tokenized_test,
+    train_dataset=datasets["train"],
+    eval_dataset=datasets["test"],
 )
 
 trainer.train()

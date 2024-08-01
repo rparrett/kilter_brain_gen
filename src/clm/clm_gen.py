@@ -21,6 +21,7 @@ prompts = [
     "a40d15",  # v2 at 40 degrees
 ]
 
+
 def remove_and_get_non_pr(output):
     non_pr = []
 
@@ -31,6 +32,7 @@ def remove_and_get_non_pr(output):
     output = re.sub(r"([^pr\d]\d+|aunk|dunk)", remove_non_pr, output)
 
     return (output, non_pr)
+
 
 for pn, prompt in enumerate(prompts):
     for n in range(5):
