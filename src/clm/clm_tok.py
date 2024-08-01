@@ -12,12 +12,15 @@ datasets = load_training_datasets()
 
 max_length = 48
 
-special_tokens = {"bos": "<s>", "eos": "</s>", "unk": "<unk>", "pad": "<pad>"}
+special_tokens = {
+    "bos_token": "<s>",
+    "eos_token": "</s>",
+    "unk_token": "<unk>",
+    "pad_token": "<pad>",
+}
 
-trainer = WordLevelTrainer(special_tokens=list(special_tokens.values()))
-
-tokenizer = Tokenizer(models.WordLevel(unk_token=special_tokens["unk"]))
-tokenizer.enable_padding(length=max_length, pad_token=special_tokens["pad"])
+tokenizer = Tokenizer(models.WordLevel(unk_token=special_tokens["unk_token"]))
+tokenizer.enable_padding(length=max_length, pad_token=special_tokens["pad_token"])
 tokenizer.enable_truncation(max_length=max_length)
 added = tokenizer.add_special_tokens(list(special_tokens.values()))
 
@@ -27,21 +30,21 @@ tokenizer.pre_tokenizer = pre_tokenizers.Split(
     Regex(r"([ad]\d+|p\d+r\d+)"), behavior="isolated"
 )
 
-bos_token_id = tokenizer.token_to_id(special_tokens["bos"])
-eos_token_id = tokenizer.token_to_id(special_tokens["eos"])
+bos_token_id = tokenizer.token_to_id(special_tokens["bos_token"])
+eos_token_id = tokenizer.token_to_id(special_tokens["eos_token"])
 
 tokenizer.post_processor = TemplateProcessing(
-    single=special_tokens["bos"] + " $A " + special_tokens["eos"],
+    single=special_tokens["bos_token"] + " $A " + special_tokens["eos_token"],
     special_tokens=[
-        (special_tokens["eos"], eos_token_id),
-        (special_tokens["bos"], bos_token_id),
+        (special_tokens["eos_token"], eos_token_id),
+        (special_tokens["bos_token"], bos_token_id),
     ],
 )
 
 print("Training tokenizer")
 
 batch_size = 1000
-
+trainer = WordLevelTrainer(special_tokens=list(special_tokens.values()))
 tokenizer.train_from_iterator(batch_iterator(datasets, batch_size), trainer=trainer)
 
 pprint.pprint(tokenizer.get_vocab())
@@ -54,9 +57,10 @@ tokenizer_pretrained = PreTrainedTokenizerFast(
     model_max_length=max_length,
     padding_side="right",
     truncation_side="right",
-    unk_token=special_tokens["unk"],
-    pad_token=special_tokens["pad"],
 )
+pprint.pprint(special_tokens)
+added = tokenizer_pretrained.add_special_tokens(special_tokens)
+print(f"Added {added} special tokens to PreTrainedTokenizer")
 
 print(f"Saving to {OUT_DIR}")
 
