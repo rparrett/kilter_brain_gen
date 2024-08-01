@@ -126,12 +126,12 @@ app.config["CORS_HEADERS"] = "Content-Type"
 @cross_origin()
 def generate(prompt):
     result = generator(prompt, do_sample=True, num_beams=1)[0]
-    (out, _non_pr) = remove_and_get_non_pr(result["generated_text"])
+    (out, non_pr) = remove_and_get_non_pr(result["generated_text"])
     out = out.replace(" ", "")
 
     a = None
     d = None
-    for thing in _non_pr:
+    for thing in non_pr:
         if d == None and thing[0] == "d":
             d = thing[1:]
             d = difficulties[d]

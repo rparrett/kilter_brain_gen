@@ -36,12 +36,12 @@ for pn, prompt in enumerate(prompts):
     for n in range(5):
         result = generator(prompt, do_sample=True, num_beams=1)[0]
 
-        (out, _non_pr) = remove_and_get_non_pr(result["generated_text"])
+        (out, non_pr) = remove_and_get_non_pr(result["generated_text"])
         out = out.replace(" ", "")
 
         a = None
         d = None
-        for thing in _non_pr:
+        for thing in non_pr:
             if d == None and thing[0] == "d":
                 d = thing
             if a == None and thing[0] == "a":
