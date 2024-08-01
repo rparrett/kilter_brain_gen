@@ -1,7 +1,7 @@
 import pprint
 from pathlib import Path
 
-from clm_data import batch_iterator, load_training_datasets, preprocess_datasets
+from clm_data import load_training_datasets, preprocess_datasets
 from transformers import (
     AutoTokenizer,
     DataCollatorForLanguageModeling,
