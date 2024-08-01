@@ -1,82 +1,35 @@
 import pprint
+from pathlib import Path
 
 from clm_data import batch_iterator, load_training_datasets, preprocess_datasets
-from tokenizers import Regex, Tokenizer, models, pre_tokenizers
-from tokenizers.processors import TemplateProcessing
-from tokenizers.trainers import WordLevelTrainer
 from transformers import (
+    AutoTokenizer,
     DataCollatorForLanguageModeling,
     GPT2Config,
     GPT2LMHeadModel,
-    PreTrainedTokenizerFast,
     Trainer,
     TrainingArguments,
 )
 
-out_dir = "clm-model"
+OUT_DIR = "clm-model"
 
 datasets = load_training_datasets()
 
-pprint.pprint(datasets)
+print(f"Train: {len(datasets['train'])} Test: {len(datasets['test'])}")
 pprint.pprint(datasets["train"][0])
 
-# Train Tokenizer
+if not (Path(OUT_DIR) / "tokenizer_config.json").exists():
+    print(f"Expecting a trained tokenizer @ {OUT_DIR}. Try clm_tok.py.")
+    exit(1)
 
-max_length = 48
+tokenizer = AutoTokenizer.from_pretrained(OUT_DIR)
 
-special_tokens = {"bos": "<s>", "eos": "</s>", "unk": "<unk>", "pad": "<pad>"}
-
-trainer = WordLevelTrainer(special_tokens=list(special_tokens.values()))
-
-tokenizer = Tokenizer(models.WordLevel(unk_token=special_tokens["unk"]))
-tokenizer.enable_padding(length=max_length, pad_token=special_tokens["pad"])
-tokenizer.enable_truncation(max_length=max_length)
-tokenizer.add_special_tokens(list(special_tokens.values()))
-tokenizer.pre_tokenizer = pre_tokenizers.Split(
-    Regex(r"([ad]\d+|p\d+r\d+)"), behavior="isolated"
-)
-
-bos_token_id = tokenizer.token_to_id(special_tokens["bos"])
-eos_token_id = tokenizer.token_to_id(special_tokens["eos"])
-
-tokenizer.post_processor = TemplateProcessing(
-    single=special_tokens["bos"] + " $A " + special_tokens["eos"],
-    special_tokens=[
-        (special_tokens["eos"], eos_token_id),
-        (special_tokens["bos"], bos_token_id),
-    ],
-)
-
-batch_size = 1000
-
-tokenizer.train_from_iterator(batch_iterator(datasets, batch_size), trainer=trainer)
-
-pprint.pprint(tokenizer.get_vocab())
-pprint.pprint(tokenizer.encode("p1596r15p1597r14").tokens)
-pprint.pprint(tokenizer.encode("p1595r15p1596r12").tokens)
-pprint.pprint(tokenizer.encode("a40d15p1595r15p1596r12").tokens)
-
-# Train Model
-
-tokenizer_pretrained = PreTrainedTokenizerFast(
-    tokenizer_object=tokenizer,
-    model_max_length=max_length,
-    padding_side="right",
-    truncation_side="right",
-    unk_token=special_tokens["unk"],
-    pad_token=special_tokens["pad"],
-)
-
-tokenizer_pretrained.save_pretrained(out_dir)
-
-# Tokenize datasets
-
-preprocess_datasets(datasets, tokenizer_pretrained)
+preprocess_datasets(datasets, tokenizer)
 
 pprint.pprint(datasets["train"][0])
 
 data_collator = DataCollatorForLanguageModeling(
-    tokenizer=tokenizer_pretrained, mlm=False, mlm_probability=0.15
+    tokenizer=tokenizer, mlm=False, mlm_probability=0.15
 )
 
 
@@ -89,10 +42,10 @@ model_config = GPT2Config(
         #   "activation_function": "gelu_new",
         #   "attn_pdrop": 0.1,
         #   "bos_token_id": 50256,
-        "bos_token_id": bos_token_id,
+        "bos_token_id": tokenizer.bos_token_id,
         #   "embd_pdrop": 0.1,
         #   "eos_token_id": 50256,
-        "eos_token_id": eos_token_id,
+        "eos_token_id": tokenizer.eos_token_id,
         #   "initializer_range": 0.02,
         #   "layer_norm_epsilon": 1e-05,
         #   "model_type": "gpt2",
@@ -117,7 +70,7 @@ model_config = GPT2Config(
         #   "transformers_version": "4.39.1",
         #   "use_cache": true,
         #   "vocab_size": 50257
-        "vocab_size": nearest_multiple_of_64(tokenizer.get_vocab_size()),
+        "vocab_size": nearest_multiple_of_64(tokenizer.vocab_size),
     }
 )
 model = GPT2LMHeadModel(config=model_config)
@@ -125,7 +78,7 @@ model = GPT2LMHeadModel(config=model_config)
 print(model.num_parameters())
 
 training_args = TrainingArguments(
-    output_dir=out_dir,  # output directory to where save model checkpoint
+    output_dir=OUT_DIR,  # output directory to where save model checkpoint
     evaluation_strategy="steps",  # evaluate each `logging_steps` steps
     overwrite_output_dir=True,
     num_train_epochs=2,  # number of training epochs, feel free to tweak
@@ -150,4 +103,4 @@ trainer = Trainer(
 
 trainer.train()
 
-model.save_pretrained(out_dir)
+model.save_pretrained(OUT_DIR)
