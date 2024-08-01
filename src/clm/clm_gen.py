@@ -17,35 +17,36 @@ generator = pipeline(
 )
 
 prompts = [
-    "a20 d20",  # v5 at 20 degrees
-    "a40 d15",  # v2 at 40 degrees
+    "a20d20",  # v5 at 20 degrees
+    "a40d15",  # v2 at 40 degrees
 ]
 
+def remove_and_get_non_pr(output):
+    non_pr = []
 
-def remove_non_pr(match):
-    non_pr.append(match.group(1))
-    return ""
+    def remove_non_pr(match):
+        non_pr.append(match.group(1))
+        return ""
 
+    output = re.sub(r"([^pr\d]\d+|aunk|dunk)", remove_non_pr, output)
+
+    return (output, non_pr)
 
 for pn, prompt in enumerate(prompts):
     for n in range(5):
-        out = generator(prompt, do_sample=True, num_beams=1)[0]
+        result = generator(prompt, do_sample=True, num_beams=1)[0]
 
-        non_pr = []
-        out = re.sub(r"([^pr\d]\d+)", remove_non_pr, out["generated_text"])
-
+        (out, _non_pr) = remove_and_get_non_pr(result["generated_text"])
         out = out.replace(" ", "")
 
-        out = (
-            model_dir
-            + "."
-            + str(pn)
-            + "."
-            + str(n)
-            + "."
-            + ".".join(non_pr)
-            + ","
-            + out
-        )
+        a = None
+        d = None
+        for thing in _non_pr:
+            if d == None and thing[0] == "d":
+                d = thing
+            if a == None and thing[0] == "a":
+                a = thing
 
-        print(out)
+        name = ".".join([model_dir, str(pn), str(n), a, d])
+
+        print(name + "," + out)
