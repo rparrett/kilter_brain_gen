@@ -1,6 +1,6 @@
 import pprint
 
-from clm_data import load_training_datasets, preprocess_datasets
+from clm_data import batch_iterator, load_training_datasets, preprocess_datasets
 from tokenizers import Regex, Tokenizer, models, pre_tokenizers
 from tokenizers.processors import TemplateProcessing
 from tokenizers.trainers import WordLevelTrainer
@@ -49,13 +49,7 @@ tokenizer.post_processor = TemplateProcessing(
 
 batch_size = 1000
 
-
-def batch_iterator():
-    for i in range(0, len(datasets["train"]), batch_size):
-        yield datasets["train"][i : i + batch_size]["frames"]
-
-
-tokenizer.train_from_iterator(batch_iterator(), trainer=trainer)
+tokenizer.train_from_iterator(batch_iterator(datasets, batch_size), trainer=trainer)
 
 pprint.pprint(tokenizer.get_vocab())
 pprint.pprint(tokenizer.encode("p1596r15p1597r14").tokens)
