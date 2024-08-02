@@ -90,7 +90,7 @@ h5py==3.10.0
     # via
     #   keras
     #   tensorflow
-huggingface-hub==0.21.4
+huggingface-hub==0.24.5
     # via
     #   accelerate
     #   datasets
@@ -299,7 +299,7 @@ termcolor==2.4.0
     # via
     #   fire
     #   tensorflow
-tokenizers==0.15.2
+tokenizers==0.19.1
     # via
     #   -r requirements.in
     #   transformers
@@ -324,7 +324,7 @@ traitlets==5.14.2
     #   jupyter-client
     #   jupyter-core
     #   matplotlib-inline
-transformers[torch]==4.39.1
+transformers[torch]==4.41.1
     # via -r requirements.in
 typing-extensions==4.10.0
     # via
