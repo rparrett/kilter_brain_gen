@@ -2,6 +2,7 @@ import pprint
 from pathlib import Path
 
 from clm_data import load_training_datasets, preprocess_datasets
+from clm_trainer import CustomTrainer
 from transformers import (
     AutoTokenizer,
     DataCollatorForLanguageModeling,
@@ -104,12 +105,13 @@ training_args = TrainingArguments(
     save_total_limit=3,  # whether you don't have much space so you let only 3 model weights saved in the disk
 )
 
-trainer = Trainer(
+trainer = CustomTrainer(
     model=model,
     args=training_args,
     data_collator=data_collator,
     train_dataset=datasets["train"],
     eval_dataset=datasets["test"],
+    tokenizer=tokenizer
 )
 
 trainer.train()
