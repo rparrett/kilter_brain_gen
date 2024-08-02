@@ -1,9 +1,11 @@
-import pprint
 import re
+import sys
 
 from transformers import AutoTokenizer, GPT2Config, GPT2LMHeadModel, pipeline
 
-checkpoint = None  # "17900"
+checkpoint = None
+if len(sys.argv) > 1:
+    checkpoint = sys.argv[1]
 
 token_dir = "clm-model"
 model_dir = token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
