@@ -1,5 +1,6 @@
 import pprint
 
+from itertools import groupby
 from clm_data import batch_iterator, load_training_datasets
 from tokenizers import Regex, Tokenizer, models, pre_tokenizers
 from tokenizers.processors import TemplateProcessing
@@ -47,10 +48,33 @@ batch_size = 1000
 trainer = WordLevelTrainer(special_tokens=list(special_tokens.values()))
 tokenizer.train_from_iterator(batch_iterator(datasets, batch_size), trainer=trainer)
 
-pprint.pprint(tokenizer.get_vocab())
-pprint.pprint(tokenizer.encode("p1596r15p1597r14").tokens)
-pprint.pprint(tokenizer.encode("p1595r15p1596r12").tokens)
-pprint.pprint(tokenizer.encode("a40d15p1595r15p1596r12").tokens)
+def inspect_tokenizer(tokenizer):
+    vocab_list = list(tokenizer.get_vocab().items())
+
+    print(f"{len(vocab_list)} tokens.")
+    print("First 25:")
+    for i in range(0, 25, 5):
+        pprint.pp(vocab_list[i : i + 5], compact=True, width=100)
+    print("Last 25:")
+    for i in range(len(vocab_list) - 25, len(vocab_list), 5):
+        pprint.pp(vocab_list[i : i + 5], compact=True, width=100)
+
+def yield_collapse_repeats(encoded_tokens):
+    for token, group in groupby(encoded_tokens):
+        repeat_count = len(list(group)) - 1
+        if repeat_count > 0:
+            yield (token, repeat_count + 1)
+        else:
+            yield token
+
+def inspect_sample(input):
+    print(input)
+    pprint.pp(list(yield_collapse_repeats(tokenizer.encode(input).tokens)))
+
+inspect_tokenizer(tokenizer)
+samples = ["p1596r15p1597r14", "p1595r15p1596r12", "a40d15p1595r15p1596r12"]
+for sample in samples:
+    inspect_sample(sample)
 
 tokenizer_pretrained = PreTrainedTokenizerFast(
     tokenizer_object=tokenizer,
