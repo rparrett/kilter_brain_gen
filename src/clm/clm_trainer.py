@@ -19,9 +19,7 @@ class CustomTrainer(Trainer):
                 self.any_hold_tokens.add(t)
 
     def compute_loss(self, model, inputs, return_outputs=False):
-        # Call the base class's compute_loss method to get the standard loss and outputs
-        outputs = model(**inputs)
-        loss = super().compute_loss(model, inputs, return_outputs=True)[0]
+        (loss, outputs) = super().compute_loss(model, inputs, return_outputs=True)
 
         logits = outputs.logits
 
@@ -29,13 +27,12 @@ class CustomTrainer(Trainer):
         predictions = argmax(logits, dim=-1)
         penalties = self.compute_penalties(predictions)
 
-        # Add penalties to the loss
         loss += penalties
 
         return (loss, outputs) if return_outputs else loss
 
     def compute_penalties(self, predictions):
-        penalty_factor = 1.0
+        penalty_factor = 5.0
 
         penalties = 0.0
 
