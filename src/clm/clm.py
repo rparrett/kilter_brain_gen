@@ -88,8 +88,8 @@ training_args = TrainingArguments(
     gradient_accumulation_steps=8,  # "used to simulate larger batch sizes" -- NanoGPT
     # gradient_accumulation_steps=1,  # accumulating the gradients before updating the weights
     per_device_eval_batch_size=16,  # evaluation batch size
-    logging_steps=200,  # evaluate, log and save model checkpoints every 200 step
-    save_steps=400,
+    logging_steps=100,  # evaluate, log and save model checkpoints every 200 step
+    save_steps=200,
     # learning_rate (`float`, *optional*, defaults to 5e-5):
     learning_rate=6e-4,  # same as NanoGPT
     lr_scheduler_type=SchedulerType.COSINE,  # same as NanoGPT
