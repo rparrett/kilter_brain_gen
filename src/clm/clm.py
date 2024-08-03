@@ -10,6 +10,7 @@ from transformers import (
     Trainer,
     TrainingArguments,
 )
+from transformers.trainer_utils import SchedulerType
 
 OUT_DIR = "clm-model"
 
@@ -81,12 +82,22 @@ training_args = TrainingArguments(
     output_dir=OUT_DIR,  # output directory to where save model checkpoint
     evaluation_strategy="steps",  # evaluate each `logging_steps` steps
     overwrite_output_dir=True,
-    num_train_epochs=2,  # number of training epochs, feel free to tweak
-    per_device_train_batch_size=8,  # the training batch size, put it as high as your GPU memory fits
-    gradient_accumulation_steps=1,  # accumulating the gradients before updating the weights
-    per_device_eval_batch_size=64,  # evaluation batch size
-    logging_steps=200,  # evaluate, log and save model checkpoints every 1000 step
-    save_steps=1000,
+    num_train_epochs=5,  # number of training epochs, feel free to tweak
+    per_device_train_batch_size=16,  # the training batch size, put it as high as your GPU memory fits; "if gradient_accumulation_steps > 1, this is the micro-batch size" --NanoGPT
+    gradient_accumulation_steps=8,  # "used to simulate larger batch sizes" -- NanoGPT
+    # gradient_accumulation_steps=1,  # accumulating the gradients before updating the weights
+    per_device_eval_batch_size=16,  # evaluation batch size
+    logging_steps=200,  # evaluate, log and save model checkpoints every 200 step
+    save_steps=400,
+    # learning_rate (`float`, *optional*, defaults to 5e-5):
+    learning_rate=6e-4,  # same as NanoGPT
+    lr_scheduler_type=SchedulerType.COSINE,  # same as NanoGPT
+    # adam_beta1 (`float`, *optional*, defaults to 0.9):
+    adam_beta1=0.9,
+    # adam_beta2 (`float`, *optional*, defaults to 0.999):
+    adam_beta2=0.95,  # same as NanoGPT
+    # weight_decay (`float`, *optional*, defaults to 0):
+    weight_decay=0.01,  # same as NanoGPT
     report_to="tensorboard",
     remove_unused_columns=False,
     load_best_model_at_end=True,  # whether to load the best model (in terms of loss) at the end of training
