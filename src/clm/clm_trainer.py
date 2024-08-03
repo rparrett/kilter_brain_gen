@@ -6,6 +6,8 @@ class CustomTrainer(Trainer):
     start_hold_tokens = set()
     end_hold_tokens = set()
     any_hold_tokens = set()
+    angle_tokens = set()
+    difficulty_tokens = set()
 
     def __init__(self, *args, tokenizer, **kwargs):
         super().__init__(*args, **kwargs)
@@ -17,6 +19,10 @@ class CustomTrainer(Trainer):
                 self.end_hold_tokens.add(t)
             elif "r13" in s:
                 self.any_hold_tokens.add(t)
+            elif "a" in s:
+                self.angle_tokens.add(t)
+            elif "d" in s:
+                self.difficulty_tokens.add(t)
 
     def compute_loss(self, model, inputs, return_outputs=False):
         (loss, outputs) = super().compute_loss(model, inputs, return_outputs=True)
@@ -32,13 +38,15 @@ class CustomTrainer(Trainer):
         return (loss, outputs) if return_outputs else loss
 
     def compute_penalties(self, predictions):
-        penalty_factor = 5.0
+        penalty_factor = 0.1
 
         penalties = 0.0
 
         start_holds = 0
         end_holds = 0
         any_holds = 0
+        angle_tokens = 0
+        difficulty_tokens = 0
 
         for pred in predictions:
             unique_tokens = set()
@@ -54,6 +62,10 @@ class CustomTrainer(Trainer):
                     end_holds += 1
                 elif token in self.any_hold_tokens:
                     any_holds += 1
+                elif token in self.angle_tokens:
+                    angle_tokens += 1
+                elif token in self.difficulty_tokens:
+                    difficulty_tokens += 1
 
         if start_holds < 1:
             penalties += penalty_factor
@@ -67,5 +79,15 @@ class CustomTrainer(Trainer):
 
         if any_holds < 1:
             penalties += penalty_factor
+
+        if difficulty_tokens < 1:
+            penalties += penalty_factor
+        elif difficulty_tokens > 1:
+            penalties += (difficulty_tokens - 1) * penalty_factor
+
+        if angle_tokens < 1:
+            penalties += penalty_factor
+        elif angle_tokens > 1:
+            penalties += (angle_tokens - 1) * penalty_factor
 
         return penalties
