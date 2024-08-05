@@ -1,5 +1,15 @@
 module_dir := "src"
-python3 := "venv/bin/python3"
+
+python3 := if os() == 'windows' {
+  "venv/Scripts/python"
+} else {
+  "venv/bin/python3"
+}
+os_python := if os() == 'windows' {
+  "python"
+} else {
+  "python3"
+}
 
 export FLASK_APP := "src/api/api.py"
 
@@ -42,7 +52,7 @@ export FLASK_APP := "src/api/api.py"
   {{python3}} -m isort --float-to-top {{module_dir}}/
 
 @venv:
-  test -f venv/bin/python3 || python3 -m venv venv
+  test -f {{python3}} || {{os_python}} -m venv venv
 
 @run *options: venv deps
   {{python3}} {{options}}
