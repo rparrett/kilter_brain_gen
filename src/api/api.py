@@ -18,7 +18,7 @@ from transformers import (
 
 
 def get_frames_generator():
-    checkpoint = "2800"
+    checkpoint = None
     token_dir = "clm-model"
     model_dir = (
         token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
