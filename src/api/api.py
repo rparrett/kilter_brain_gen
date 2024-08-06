@@ -174,6 +174,8 @@ def generate():
 def publish():
     data = request.json
 
+    is_draft = data.get('is_draft', False)
+
     if not os.path.isfile("token.json"):
         return {"error": "No stored token"}
 
@@ -188,7 +190,7 @@ def publish():
         "setter_id": token["session"]["user_id"],
         "name": data["name"],
         "description": data["description"],
-        "is_draft": True,
+        "is_draft": is_draft,
         "frames_count": 1,
         "frames_pace": 0,
         "frames": data["frames"],
