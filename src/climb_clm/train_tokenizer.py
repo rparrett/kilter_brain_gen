@@ -1,7 +1,7 @@
 import pprint
 
 from itertools import groupby
-from clm_data import batch_iterator, load_training_datasets
+from data import batch_iterator, load_training_datasets
 from tokenizers import Regex, Tokenizer, models, pre_tokenizers
 from tokenizers.processors import TemplateProcessing
 from tokenizers.trainers import WordLevelTrainer
