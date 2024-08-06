@@ -1,6 +1,7 @@
 import json
 import os.path
 import pprint
+from random import randint
 import re
 from uuid import uuid4
 
@@ -155,7 +156,7 @@ def generate():
         # }
         # name = name_generator("", **name_params)[0]['generated_text']
 
-        name = randomname.generate()
+        name = randomname.generate() + '-' + str(randint(100,999))
 
         climbs.append({
             "uuid": uuid4().hex,
