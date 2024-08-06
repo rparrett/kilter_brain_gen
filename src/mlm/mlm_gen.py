@@ -2,8 +2,8 @@ import random
 
 from transformers import AutoTokenizer, BertForMaskedLM, pipeline
 
-tokenizer = AutoTokenizer.from_pretrained("models/climb-mlm")
-model = BertForMaskedLM.from_pretrained("models/climb-mlm")
+tokenizer = AutoTokenizer.from_pretrained("models/climb_mlm")
+model = BertForMaskedLM.from_pretrained("models/climb_mlm")
 
 for n in range(10):
     start = "p1201r12p1202r12"

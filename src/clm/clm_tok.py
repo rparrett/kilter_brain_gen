@@ -7,7 +7,7 @@ from tokenizers.processors import TemplateProcessing
 from tokenizers.trainers import WordLevelTrainer
 from transformers import PreTrainedTokenizerFast
 
-OUT_DIR = "models/climb-clm"
+OUT_DIR = "models/climb_clm"
 
 datasets = load_training_datasets()
 

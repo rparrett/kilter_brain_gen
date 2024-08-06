@@ -19,7 +19,7 @@ from transformers import (
 
 def get_frames_generator():
     checkpoint = None
-    token_dir = "models/climb-clm"
+    token_dir = "models/climb_clm"
     model_dir = (
         token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
     )
