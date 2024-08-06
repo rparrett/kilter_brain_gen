@@ -45,7 +45,7 @@ coverage[toml]==7.6.0
     # via pytest-cov
 datasets==2.20.0
     # via -r requirements.in
-debugpy==1.8.3
+debugpy==1.8.5
     # via ipykernel
 decorator==5.1.1
     # via ipython
@@ -339,6 +339,8 @@ tzdata==2024.1
     # via pandas
 urllib3==2.2.2
     # via requests
+watchdog==4.0.1
+    # via -r requirements.in
 wcwidth==0.2.13
     # via prompt-toolkit
 werkzeug==3.0.3
