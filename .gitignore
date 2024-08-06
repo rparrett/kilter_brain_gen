@@ -1,6 +1,6 @@
 creds.json
 token.json
 climbs.csv
-*-model
+models
 venv
 *.pyc

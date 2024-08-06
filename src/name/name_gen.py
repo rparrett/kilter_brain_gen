@@ -10,7 +10,7 @@ console = Console()
 
 checkpoint = "7500"
 
-token_dir = "name-model"
+token_dir = "models/name"
 model_dir = token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
 
 tokenizer = GPT2TokenizerFast.from_pretrained(

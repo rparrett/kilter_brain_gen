@@ -12,7 +12,7 @@ from transformers import (
 )
 from transformers.trainer_utils import SchedulerType
 
-OUT_DIR = "clm-model"
+OUT_DIR = "models/climb-clm"
 
 datasets = load_training_datasets()
 

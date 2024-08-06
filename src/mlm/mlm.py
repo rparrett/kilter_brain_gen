@@ -13,7 +13,7 @@ from transformers import (
     TrainingArguments,
 )
 
-out_dir = "mlm-model"
+out_dir = "models/climb-mlm"
 
 features = Features(
     {

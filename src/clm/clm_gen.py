@@ -7,7 +7,7 @@ checkpoint = None
 if len(sys.argv) > 1:
     checkpoint = sys.argv[1]
 
-token_dir = "clm-model"
+token_dir = "models/climb-clm"
 model_dir = token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
 
 tokenizer = AutoTokenizer.from_pretrained(token_dir)

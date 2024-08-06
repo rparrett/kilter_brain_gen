@@ -58,7 +58,7 @@ export FLASK_APP := "src/api/api.py"
   {{python3}} {{options}}
 
 @tensorboard model: venv deps
-  venv/bin/tensorboard --logdir={{model}}-model
+  venv/bin/tensorboard --logdir=models/{{model}}
 
 @flask *options: venv deps
   venv/bin/flask run --host=0.0.0.0 --port=5001

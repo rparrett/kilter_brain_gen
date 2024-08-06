@@ -52,7 +52,7 @@ class Handler(FileSystemEventHandler):
                 print()
 
 
-model_dir = "name-model"
+model_dir = "models/name"
 
 tokenizer = GPT2TokenizerFast.from_pretrained(
     "gpt2", bos_token="<|startoftext|>", eos_token="<|endoftext|>", pad_token="<|pad|>"

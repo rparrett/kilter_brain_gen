@@ -10,7 +10,7 @@ from transformers import (
     TrainingArguments,
 )
 
-out_dir = "name-model"
+out_dir = "models/name"
 
 features = Features(
     {
