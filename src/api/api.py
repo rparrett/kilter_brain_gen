@@ -122,41 +122,51 @@ cors = CORS(app)
 app.config["CORS_HEADERS"] = "Content-Type"
 
 
-@app.route("/generate/<prompt>")
+@app.route("/generate", methods = ['POST'])
 @cross_origin()
-def generate(prompt):
-    result = generator(prompt, do_sample=True, num_beams=1)[0]
-    (out, non_pr) = remove_and_get_non_pr(result["generated_text"])
-    out = out.replace(" ", "")
+def generate():
+    data = request.json
 
-    a = None
-    d = None
-    for thing in non_pr:
-        if d == None and thing[0] == "d":
-            d = thing[1:]
-            d = difficulties[d]
-        if a == None and thing[0] == "a":
-            a = thing[1:]
-            a = None if a == "unk" else int(a)
+    num = data.get('num', 1)
 
-    # name_params = {
-    #     "do_sample": True,
-    #     "num_beams": 4,
-    #     "prefix": "<|startoftext|>"
-    # }
+    # TODO error if no prompt
 
-    # name = name_generator("", **name_params)[0]['generated_text']
+    climbs = []
 
-    name = randomname.generate()
+    for _ in range(num):
+        result = generator(data['prompt'], do_sample=True, num_beams=1)[0]
+        (out, non_pr) = remove_and_get_non_pr(result["generated_text"])
+        out = out.replace(" ", "")
 
-    return {
-        "uuid": uuid4().hex,
-        "frames": out,
-        "name": name,
-        "description": "beep boop",
-        "angle": a,
-        "difficulty": d,
-    }
+        a = None
+        d = None
+        for thing in non_pr:
+            if d == None and thing[0] == "d":
+                d = thing[1:]
+                d = difficulties[d]
+            if a == None and thing[0] == "a":
+                a = thing[1:]
+                a = None if a == "unk" else int(a)
+
+        # name_params = {
+        #     "do_sample": True,
+        #     "num_beams": 4,
+        #     "prefix": "<|startoftext|>"
+        # }
+        # name = name_generator("", **name_params)[0]['generated_text']
+
+        name = randomname.generate()
+
+        climbs.append({
+            "uuid": uuid4().hex,
+            "frames": out,
+            "name": name,
+            "description": "beep boop",
+            "angle": a,
+            "difficulty": d,
+        })
+
+    return climbs
 
 
 @app.route("/publish", methods=["POST"])
