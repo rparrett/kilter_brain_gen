@@ -8,7 +8,7 @@ from transformers import GPT2Config, GPT2LMHeadModel, GPT2TokenizerFast, pipelin
 
 console = Console()
 
-checkpoint = "7500"
+checkpoint = "6400"
 
 token_dir = "name-model"
 model_dir = token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
