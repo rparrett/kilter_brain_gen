@@ -11,6 +11,5 @@ Generating kilter board problems with transformers
 
 ### Experiments
 
-- [ ] Try sorting frame data by placement and role id
 - [ ] Try adding duplicate climbs with randomized frame data
 - [ ] Try different sampling strategies for climb data
