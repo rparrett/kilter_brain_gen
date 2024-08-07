@@ -128,6 +128,8 @@ app.config["CORS_HEADERS"] = "Content-Type"
 def generate():
     data = request.json
 
+    print(data['prompt'])
+
     num = min(data.get('num', 1), 10)
 
     # TODO error if no prompt

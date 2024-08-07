@@ -1,4 +1,11 @@
 from datasets import Features, Value, load_dataset
+import re
+import random
+
+def sort_frames(example):
+    frames = re.findall(r"p(\d+)r(\d+)", example["frames"])
+    random.shuffle(frames)
+    example["frames"] = "".join(map(lambda f: f"p{f[0]}r{f[1]}", frames))
 
 
 def add_prefix(example):
@@ -28,7 +35,7 @@ def load_training_datasets():
         split="train",
     )
 
-    datasets = dataset.map(add_prefix).train_test_split()
+    datasets = dataset.map(sort_frames).map(add_prefix).train_test_split()
     return datasets
 
 
