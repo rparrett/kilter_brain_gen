@@ -22,7 +22,7 @@ class CustomTrainer(Trainer):
             [1 if "d" in s else 0 for s in vocab.keys()]
         )
         self._device_of_masks = "cpu"
-        self.penalty_alpha = 5e-1
+        self.penalty_alpha = 1e-2
 
     def compute_loss(self, model, inputs, return_outputs=False):
         (loss, outputs) = super().compute_loss(model, inputs, return_outputs=True)
@@ -85,7 +85,7 @@ class CustomTrainer(Trainer):
         # Count occurrences of each token type
         start_holds = torch.sum(one_hot * self.start_hold_mask, dim=(1, 2))
         end_holds = torch.sum(one_hot * self.end_hold_mask, dim=(1, 2))
-        any_holds = torch.sum(one_hot * self.any_hold_mask, dim=(1, 2))
+        # any_holds = torch.sum(one_hot * self.any_hold_mask, dim=(1, 2))
         angle_tokens = torch.sum(one_hot * self.angle_mask, dim=(1, 2))
         difficulty_tokens = torch.sum(one_hot * self.difficulty_mask, dim=(1, 2))
 
@@ -102,14 +102,13 @@ class CustomTrainer(Trainer):
 
         # Penalties for any_holds, difficulty_tokens, and angle_tokens
         # Values less than 1 or greater than 1 are penalized
-        any_hold_penalties = torch.abs(any_holds - 1)
+        # any_hold_penalties = torch.abs(any_holds - 1)
         difficulty_penalties = torch.abs(difficulty_tokens - 1)
         angle_penalties = torch.abs(angle_tokens - 1)
-        penalties += (any_hold_penalties + difficulty_penalties + angle_penalties).sum()
+        penalties += (difficulty_penalties + angle_penalties).sum()
 
         # Normalize by actual sequence lengths
         normalized_penalties = penalties / actual_seq_lengths
-
         return torch.mean(normalized_penalties) * self.penalty_alpha, actual_seq_lengths
 
     def log(self, logs):

@@ -88,7 +88,7 @@ training_args = TrainingArguments(
     gradient_accumulation_steps=8,  # "used to simulate larger batch sizes" -- NanoGPT
     # gradient_accumulation_steps=1,  # accumulating the gradients before updating the weights
     per_device_eval_batch_size=16,  # evaluation batch size
-    logging_steps=100,  # evaluate, log and save model checkpoints every 200 step
+    logging_steps=100,  # evaluate, log and save model checkpoints every n steps
     save_steps=200,
     # learning_rate (`float`, *optional*, defaults to 5e-5):
     learning_rate=6e-4,  # same as NanoGPT
@@ -103,6 +103,7 @@ training_args = TrainingArguments(
     remove_unused_columns=False,
     load_best_model_at_end=True,  # whether to load the best model (in terms of loss) at the end of training
     save_total_limit=3,  # whether you don't have much space so you let only 3 model weights saved in the disk
+    metric_for_best_model="eval_loss",  # Use eval_loss to compare models
 )
 
 trainer = CustomTrainer(
@@ -111,7 +112,7 @@ trainer = CustomTrainer(
     data_collator=data_collator,
     train_dataset=datasets["train"],
     eval_dataset=datasets["test"],
-    tokenizer=tokenizer
+    tokenizer=tokenizer,
 )
 
 trainer.train()
