@@ -20,7 +20,7 @@ print(f"Train: {len(datasets['train'])} Test: {len(datasets['test'])}")
 pprint.pprint(datasets["train"][0])
 
 if not (Path(OUT_DIR) / "tokenizer_config.json").exists():
-    print(f"Expecting a trained tokenizer @ {OUT_DIR}. Try clm_tok.py.")
+    print(f"Expecting a trained tokenizer @ {OUT_DIR}. Try train_tokenizer.py.")
     exit(1)
 
 tokenizer = AutoTokenizer.from_pretrained(OUT_DIR)
