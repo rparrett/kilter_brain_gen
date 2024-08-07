@@ -3,15 +3,24 @@
 .output climbs.csv
 
 SELECT
-    `name`, `setter_username`, `description`, `angle`, `frames`,
+    climbs.`name`,
+    climbs.`setter_username`,
+    climbs.`description`,
+    climbs.`angle`,
+    climbs.`frames`,
     `climb_cache_fields`.`display_difficulty`,
     `climb_cache_fields`.`quality_average`
 FROM climbs
 INNER JOIN `climb_cache_fields` ON `climb_uuid` = `climbs`.`uuid`
+INNER JOIN product_sizes ON product_sizes.id = 10 /* 12 x 12 with kickboard */
 WHERE
-    layout_id = 1 AND
-    frames_count = 1 AND
-    is_listed = 1 AND
+    climbs.layout_id = 1 AND
+    climbs.frames_count = 1 AND
+    climbs.is_listed = 1 AND
+    climbs.edge_left > product_sizes.edge_left AND
+    climbs.edge_right < product_sizes.edge_right AND
+    climbs.edge_bottom > product_sizes.edge_bottom AND
+    climbs.edge_top < product_sizes.edge_top AND
     `climb_cache_fields`.`display_difficulty` IS NOT NULL AND
     `climb_cache_fields`.`quality_average` IS NOT NULL AND
     frames NOT REGEXP 'p139[6-9]' AND
