@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 from transformers import Trainer
+from torch.utils.tensorboard import SummaryWriter
 
 
 class CustomTrainer(Trainer):
@@ -22,7 +23,9 @@ class CustomTrainer(Trainer):
             [1 if "d" in s else 0 for s in vocab.keys()]
         )
         self._device_of_masks = "cpu"
-        self.penalty_alpha = 1e-2
+        self.penalty_alpha = 1e-3
+        self.tb_writer = SummaryWriter(log_dir=self.args.logging_dir)
+        print(self.args.logging_dir)
 
     def compute_loss(self, model, inputs, return_outputs=False):
         (loss, outputs) = super().compute_loss(model, inputs, return_outputs=True)
@@ -34,18 +37,18 @@ class CustomTrainer(Trainer):
 
         total_loss = loss + penalties
 
-        self.log(
+        self.log_custom_values(
             {
-                "original_loss": loss.item(),
-                "custom_penalty": penalties.item(),
-                "total_loss": total_loss.item(),
+                "original_loss": round(loss.item(), 4),
+                "custom_penalty": round(penalties.item(), 5),
+                "total_loss": round(total_loss.item(), 4),
                 "avg_seq_length": seq_lengths.float().mean().item(),
                 "min_seq_length": seq_lengths.min().item(),
                 "max_seq_length": seq_lengths.max().item(),
             }
         )
         # Log sequence length distribution (in bins)
-        # seq_length_bins = torch.histc(seq_lengths.float(), bins=10, min=0, max=seq_lengths.max())
+        # seq_length_bins = torch.histc(seq_lengths.float(), bins=5, min=0, max=seq_lengths.max())
         # for i, count in enumerate(seq_length_bins):
         #    self.log({f"seq_length_bin_{i}": count.item()})
 
@@ -65,14 +68,12 @@ class CustomTrainer(Trainer):
 
         batch_size, seq_length = predictions.shape
 
-        # Create non-padding token mask
-        if attention_mask is None:
-            # If no attention mask is provided, assume all tokens are non-padding
-            non_padding_mask = torch.ones_like(
-                predictions, dtype=torch.float, device=device
-            )
-        else:
-            non_padding_mask = attention_mask.float()
+        # If no attention mask is provided, assume all tokens are non-padding
+        non_padding_mask = (
+            torch.ones_like(predictions, dtype=torch.float, device=device)
+            if attention_mask is None
+            else attention_mask.float()
+        )
 
         # Calculate actual sequence lengths
         actual_seq_lengths = non_padding_mask.sum(dim=1)
@@ -80,42 +81,51 @@ class CustomTrainer(Trainer):
         # One-hot encode predictions
         one_hot = F.one_hot(predictions, num_classes=len(self.start_hold_mask)).float()
 
-        # Apply non-padding mask to one-hot encodings
+        # Apply non-padding mask to one-hot encodings (zero out padding token slots)
         one_hot = one_hot * non_padding_mask.unsqueeze(-1)
+
         # Count occurrences of each token type
         start_holds = torch.sum(one_hot * self.start_hold_mask, dim=(1, 2))
         end_holds = torch.sum(one_hot * self.end_hold_mask, dim=(1, 2))
-        # any_holds = torch.sum(one_hot * self.any_hold_mask, dim=(1, 2))
+        any_holds = torch.sum(one_hot * self.any_hold_mask, dim=(1, 2))
         angle_tokens = torch.sum(one_hot * self.angle_mask, dim=(1, 2))
         difficulty_tokens = torch.sum(one_hot * self.difficulty_mask, dim=(1, 2))
 
         penalties = torch.zeros(batch_size, device=device)
 
         # Penalties for repeated holds/tokens
-        penalties += (torch.sum(one_hot, dim=1) > 1).sum().float()
+        penalties += torch.where(torch.sum(one_hot, dim=1) > 1, 1.0, 0.0).sum()
 
-        # Penalties for start and end holds
-        # Values less than 1 or greater than 2 are penalized
-        start_hold_penalties = torch.max(1 - start_holds, start_holds - 2).clamp(min=0)
-        end_hold_penalties = torch.max(1 - end_holds, end_holds - 2).clamp(min=0)
-        penalties += start_hold_penalties.sum() + end_hold_penalties.sum()
+        # Penalties for token counts
+        penalties += torch.where(start_holds < 1, 1, 0.0).sum()
+        penalties += torch.where(start_holds > 2, (start_holds - 2), 0.0).sum()
 
-        # Penalties for any_holds, difficulty_tokens, and angle_tokens
-        # Values less than 1 or greater than 1 are penalized
-        # any_hold_penalties = torch.abs(any_holds - 1)
-        difficulty_penalties = torch.abs(difficulty_tokens - 1)
-        angle_penalties = torch.abs(angle_tokens - 1)
-        penalties += (difficulty_penalties + angle_penalties).sum()
+        penalties += torch.where(end_holds < 1, 1, 0.0).sum()
+        penalties += torch.where(end_holds > 2, (end_holds - 2), 0.0).sum()
+
+        penalties += torch.where(any_holds < 1, 1, 0.0).sum()
+
+        penalties += torch.where(difficulty_tokens < 1, 1, 0.0).sum()
+        penalties += torch.where(
+            difficulty_tokens > 1, (difficulty_tokens - 1), 0.0
+        ).sum()
+
+        penalties += torch.where(angle_tokens < 1, 1, 0.0).sum()
+        penalties += torch.where(angle_tokens > 1, (angle_tokens - 1), 0.0).sum()
 
         # Normalize by actual sequence lengths
         normalized_penalties = penalties / actual_seq_lengths
         return torch.mean(normalized_penalties) * self.penalty_alpha, actual_seq_lengths
 
-    def log(self, logs):
-        """
-        Add custom_penalty to the existing logs and pass to the original log method.
-        """
-        if self.state.epoch is not None:
-            logs["epoch"] = round(self.state.epoch, 2)
+    def get_phase(self):
+        if self.model.training:
+            return "train"
+        else:
+            return "eval"
 
-        super().log(logs)
+    def log_custom_values(self, logs):
+        step = self.state.global_step
+        phase = self.get_phase()
+        for key, value in logs.items():
+            self.tb_writer.add_scalar(f"{phase}/{key}", value, step)
+        self.tb_writer.flush()  # Ensure data is written to disk

@@ -8,8 +8,8 @@ from transformers import (
     DataCollatorForLanguageModeling,
     GPT2Config,
     GPT2LMHeadModel,
-    Trainer,
     TrainingArguments,
+    EarlyStoppingCallback,
 )
 from transformers.trainer_utils import SchedulerType
 
@@ -77,7 +77,8 @@ model_config = GPT2Config(
 )
 model = GPT2LMHeadModel(config=model_config)
 
-print(model.num_parameters())
+print(f"Model parameters: {model.num_parameters()}")
+
 
 training_args = TrainingArguments(
     output_dir=OUT_DIR,  # output directory to where save model checkpoint
@@ -85,9 +86,9 @@ training_args = TrainingArguments(
     overwrite_output_dir=True,
     num_train_epochs=5,  # number of training epochs, feel free to tweak
     per_device_train_batch_size=16,  # the training batch size, put it as high as your GPU memory fits; "if gradient_accumulation_steps > 1, this is the micro-batch size" --NanoGPT
+    per_device_eval_batch_size=16,  # evaluation batch size
     gradient_accumulation_steps=8,  # "used to simulate larger batch sizes" -- NanoGPT
     # gradient_accumulation_steps=1,  # accumulating the gradients before updating the weights
-    per_device_eval_batch_size=16,  # evaluation batch size
     logging_steps=100,  # evaluate, log and save model checkpoints every n steps
     save_steps=200,
     # learning_rate (`float`, *optional*, defaults to 5e-5):
@@ -113,6 +114,7 @@ trainer = CustomTrainer(
     train_dataset=datasets["train"],
     eval_dataset=datasets["test"],
     tokenizer=tokenizer,
+    callbacks=[EarlyStoppingCallback(early_stopping_patience=5)],
 )
 
 trainer.train()
