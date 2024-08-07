@@ -23,7 +23,7 @@ class CustomTrainer(Trainer):
             [1 if "d" in s else 0 for s in vocab.keys()]
         )
         self._device_of_masks = "cpu"
-        self.penalty_alpha = 1e-3
+        self.penalty_alpha = 1e-1
         self.tb_writer = SummaryWriter(log_dir=self.args.logging_dir)
         print(self.args.logging_dir)
 

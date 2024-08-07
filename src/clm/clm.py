@@ -92,7 +92,7 @@ training_args = TrainingArguments(
     logging_steps=100,  # evaluate, log and save model checkpoints every n steps
     save_steps=200,
     # learning_rate (`float`, *optional*, defaults to 5e-5):
-    learning_rate=6e-4,  # same as NanoGPT
+    learning_rate=6e-4,  # 2e-5 default, 6e-4 same as NanoGPT
     lr_scheduler_type=SchedulerType.COSINE,  # same as NanoGPT
     # adam_beta1 (`float`, *optional*, defaults to 0.9):
     adam_beta1=0.9,
@@ -114,7 +114,9 @@ trainer = CustomTrainer(
     train_dataset=datasets["train"],
     eval_dataset=datasets["test"],
     tokenizer=tokenizer,
-    callbacks=[EarlyStoppingCallback(early_stopping_patience=5)],
+    callbacks=[
+        EarlyStoppingCallback(early_stopping_patience=5, early_stopping_threshold=0.001)
+    ],
 )
 
 trainer.train()
