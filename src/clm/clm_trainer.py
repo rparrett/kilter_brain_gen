@@ -23,7 +23,7 @@ class CustomTrainer(Trainer):
             [1 if "d" in s else 0 for s in vocab.keys()]
         )
         self._device_of_masks = "cpu"
-        self.penalty_alpha = 1e-1
+        self.penalty_alpha = 5e-3
         self.tb_writer = SummaryWriter(log_dir=self.args.logging_dir)
         print(self.args.logging_dir)
 
@@ -33,18 +33,19 @@ class CustomTrainer(Trainer):
         logits = outputs.logits
         predictions = torch.argmax(logits, dim=-1)
         attention_mask = inputs.get("attention_mask")  # Get attention mask from inputs
-        penalties, seq_lengths = self.compute_penalties(predictions, attention_mask)
 
+        penalties, seq_lengths = self.compute_penalties(predictions, attention_mask)
         total_loss = loss + penalties
+        # total_loss = loss
 
         self.log_custom_values(
             {
                 "original_loss": round(loss.item(), 4),
                 "custom_penalty": round(penalties.item(), 5),
                 "total_loss": round(total_loss.item(), 4),
-                "avg_seq_length": seq_lengths.float().mean().item(),
-                "min_seq_length": seq_lengths.min().item(),
-                "max_seq_length": seq_lengths.max().item(),
+                # "avg_seq_length": seq_lengths.float().mean().item(),
+                # "min_seq_length": seq_lengths.min().item(),
+                # "max_seq_length": seq_lengths.max().item(),
             }
         )
         # Log sequence length distribution (in bins)
