@@ -19,6 +19,10 @@ from transformers.trainer_utils import SchedulerType
 OUT_DIR = "clm-model"
 
 
+def nearest_multiple_of_64(n):
+    return 64 * ((n + 63) // 64)
+
+
 class SampleGenerationCallback(TrainerCallback):
     def __init__(self, tokenizer, model, num_samples=1):
         self.tokenizer = tokenizer
@@ -154,7 +158,3 @@ trainer = CustomTrainer(
 trainer.train()
 
 model.save_pretrained(OUT_DIR)
-
-
-def nearest_multiple_of_64(n):
-    return 64 * ((n + 63) // 64)
