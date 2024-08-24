@@ -31,6 +31,7 @@ generator = alt_gen.generate
 prompts = [
     "a20d20",  # v5 at 20 degrees
     "a40d15",  # v2 at 40 degrees
+    "a10d10",  # v? at 10 degrees
 ]
 
 
@@ -47,7 +48,7 @@ def remove_and_get_non_pr(output):
 
 
 penalizer = Penalizer(tokenizer)
-console.print(penalizer.get_token_sets())
+# console.print(penalizer.get_token_sets()) # debugging
 
 
 def get_ad(non_pr):
@@ -69,9 +70,11 @@ def get_ad(non_pr):
 
 stats = []
 n = 5
+verbose = False
 for pn, prompt in enumerate(prompts):
     gen_result = generator(prompt, num_return_sequences=n, do_sample=True, num_beams=1)
-    print(gen_result)
+    if verbose:
+        print(gen_result)
 
     pipe_result = pipe(
         prompt,
@@ -79,7 +82,8 @@ for pn, prompt in enumerate(prompts):
         do_sample=True,
         num_beams=1,
     )
-    print(pipe_result)
+    if verbose:
+        print(pipe_result)
 
     for n, result in enumerate(gen_result):
         text = result["generated_text"]
@@ -101,19 +105,20 @@ for pn, prompt in enumerate(prompts):
                 for x in result["tokens"].flatten().tolist()
                 if x != tokenizer.pad_token_id
             ]
-
-            print()
-            print("tokens:")
-            print(toks)
             penalties = penalizer.compute_penalties(toks)
             penalty_score = penalizer.compute_penalty_score(penalties)
-            print("penalty score:", sum(penalties.values()), penalty_score)
-            pprint(
-                list(
-                    f"{k}: {v}"
-                    for k, v in sorted(penalties.items(), key=lambda x: x[1])
+
+            if verbose:
+                print()
+                print("tokens:")
+                print(toks)
+                print("penalty score:", sum(penalties.values()), penalty_score)
+                pprint(
+                    list(
+                        f"{k}: {v}"
+                        for k, v in sorted(penalties.items(), key=lambda x: x[1])
+                    )
                 )
-            )
             stats.append(
                 (
                     prompt,
@@ -125,4 +130,7 @@ for pn, prompt in enumerate(prompts):
             )
 
 print("Stats:")
-console.print(stats)
+# console.print(stats)
+print()
+for stat in sorted(stats, key=lambda x: x[2], reverse=False):
+    console.print(stat[:3], stat[3], stat[4])
