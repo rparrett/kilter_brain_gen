@@ -1,3 +1,4 @@
+import sys
 import pprint
 
 from itertools import groupby
@@ -7,7 +8,7 @@ from tokenizers.processors import TemplateProcessing
 from tokenizers.trainers import WordLevelTrainer
 from transformers import PreTrainedTokenizerFast
 
-OUT_DIR = "models/climb_clm"
+OUT_DIR = sys.argv[1] if len(sys.argv) > 1 else "models/climb_clm_tokenizer"
 
 datasets = load_training_datasets()
 
@@ -25,7 +26,8 @@ tokenizer.enable_padding(length=max_length, pad_token=special_tokens["pad_token"
 tokenizer.enable_truncation(max_length=max_length)
 added = tokenizer.add_special_tokens(list(special_tokens.values()))
 
-print(f"Added {added} tokens to Tokenizer")
+print(f"Max length: {max_length}")
+print(f"Added {added} special tokens to Tokenizer")
 
 tokenizer.pre_tokenizer = pre_tokenizers.Split(
     Regex(r"([ad]\d+|p\d+r\d+)"), behavior="isolated"
@@ -48,6 +50,7 @@ batch_size = 1000
 trainer = WordLevelTrainer(special_tokens=list(special_tokens.values()))
 tokenizer.train_from_iterator(batch_iterator(datasets, batch_size), trainer=trainer)
 
+
 def inspect_tokenizer(tokenizer):
     vocab_list = list(tokenizer.get_vocab().items())
 
@@ -59,6 +62,7 @@ def inspect_tokenizer(tokenizer):
     for i in range(len(vocab_list) - 25, len(vocab_list), 5):
         pprint.pp(vocab_list[i : i + 5], compact=True, width=100)
 
+
 def yield_collapse_repeats(encoded_tokens):
     for token, group in groupby(encoded_tokens):
         repeat_count = len(list(group)) - 1
@@ -67,9 +71,11 @@ def yield_collapse_repeats(encoded_tokens):
         else:
             yield token
 
+
 def inspect_sample(input):
     print(input)
     pprint.pp(list(yield_collapse_repeats(tokenizer.encode(input).tokens)))
+
 
 inspect_tokenizer(tokenizer)
 samples = ["p1596r15p1597r14", "p1595r15p1596r12", "a40d15p1595r15p1596r12"]
@@ -82,6 +88,7 @@ tokenizer_pretrained = PreTrainedTokenizerFast(
     padding_side="right",
     truncation_side="right",
 )
+print("Special tokens:")
 pprint.pprint(special_tokens)
 added = tokenizer_pretrained.add_special_tokens(special_tokens)
 print(f"Added {added} special tokens to PreTrainedTokenizer")

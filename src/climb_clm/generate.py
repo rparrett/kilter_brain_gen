@@ -1,18 +1,24 @@
 import re
 import sys
+from pprint import pprint
 
 from transformers import AutoTokenizer, GPT2Config, GPT2LMHeadModel, pipeline
 
-checkpoint = None
-if len(sys.argv) > 1:
-    checkpoint = sys.argv[1]
+from cfg import get_latest_checkpoint_path
+from data import Penalizer
 
-token_dir = "models/climb_clm"
-model_dir = token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
+checkpoint_path = (
+    sys.argv[1] if len(sys.argv) > 1 else get_latest_checkpoint_path().as_posix()
+)
 
-tokenizer = AutoTokenizer.from_pretrained(token_dir)
-config = GPT2Config.from_pretrained(model_dir)
-model = GPT2LMHeadModel.from_pretrained(model_dir)
+TRAINING_DIR = "models"
+tokenizer_dir = f"{TRAINING_DIR}/climb_clm_tokenizer"
+
+print(f"Checkpoint dir: {checkpoint_path}")
+print(f"Tokenizer: {tokenizer_dir}")
+tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir)
+config = GPT2Config.from_pretrained(checkpoint_path)
+model = GPT2LMHeadModel.from_pretrained(checkpoint_path)
 
 generator = pipeline(
     "text-generation", model=model, tokenizer=tokenizer, max_new_tokens=20
@@ -36,21 +42,42 @@ def remove_and_get_non_pr(output):
     return (output, non_pr)
 
 
+penalizer = Penalizer(tokenizer)
+
+
+def get_ad(non_pr):
+    a = None
+    d = None
+    for thing in non_pr:
+        if d is None and thing[0] == "d":
+            d = thing
+        if a is None and thing[0] == "a":
+            a = thing
+    return a, d
+
+
 for pn, prompt in enumerate(prompts):
     for n in range(5):
         result = generator(prompt, do_sample=True, num_beams=1)[0]
-
+        print(result["generated_text"])
         (out, non_pr) = remove_and_get_non_pr(result["generated_text"])
         out = out.replace(" ", "")
 
-        a = None
-        d = None
-        for thing in non_pr:
-            if d == None and thing[0] == "d":
-                d = thing
-            if a == None and thing[0] == "a":
-                a = thing
+        toks = tokenizer(out)["input_ids"]
+        print()
+        print("tokens:")
+        print(toks)
+        print()
+        penalties = penalizer.compute_penalties(toks)
+        penalty_score = penalizer.compute_penalty_score(penalties)
+        print("penalty score:", penalty_score)
+        pprint(
+            list(f"{k}: {v}" for k, v in sorted(penalties.items(), key=lambda x: x[1]))
+        )
 
-        name = ".".join([model_dir, str(pn), str(n), a, d])
+        a, d = get_ad(non_pr)
 
+        name = ".".join([checkpoint_path, str(pn), str(n), a, d])
+        print()
+        print("out:")
         print(name + "," + out)

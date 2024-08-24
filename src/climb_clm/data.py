@@ -1,4 +1,5 @@
 from datasets import Features, Value, load_dataset
+from collections import defaultdict
 
 
 def add_prefix(example):
@@ -15,7 +16,7 @@ def add_prefix(example):
 def load_training_datasets():
     dataset = load_dataset(
         "csv",
-        data_files="climbs.csv",
+        data_files=["climbs.csv", "climbs_shuffled.csv"],
         delimiter=",",
         features=Features(
             {
@@ -48,3 +49,84 @@ def preprocess_datasets(datasets, tokenizer):
 def batch_iterator(datasets, batch_size):
     for i in range(0, len(datasets["train"]), batch_size):
         yield datasets["train"][i : i + batch_size]["frames"]
+
+
+class Penalizer:
+    start_hold_tokens = set()
+    end_hold_tokens = set()
+    any_hold_tokens = set()
+    angle_tokens = set()
+    difficulty_tokens = set()
+
+    def __init__(self, tokenizer):
+        for s, t in tokenizer.get_vocab().items():
+            if "r12" in s:
+                self.start_hold_tokens.add(t)
+            elif "r14" in s:
+                self.end_hold_tokens.add(t)
+            elif "r13" in s:
+                self.any_hold_tokens.add(t)
+            elif "a" in s:
+                self.angle_tokens.add(t)
+            elif "d" in s:
+                self.difficulty_tokens.add(t)
+
+    def compute_penalties(self, y):
+        penalties = defaultdict(int)
+
+        start_holds = 0
+        end_holds = 0
+        any_holds = 0
+        angle_tokens = 0
+        difficulty_tokens = 0
+
+        for pred in [y]:
+            unique_tokens = set()
+            for token in pred:
+                # No token should appear more than once
+                if token in unique_tokens:
+                    penalties["repeated"] += 1
+                unique_tokens.add(token)
+
+                if token in self.start_hold_tokens:
+                    start_holds += 1
+                elif token in self.end_hold_tokens:
+                    end_holds += 1
+                elif token in self.any_hold_tokens:
+                    any_holds += 1
+                elif token in self.angle_tokens:
+                    angle_tokens += 1
+                elif token in self.difficulty_tokens:
+                    difficulty_tokens += 1
+
+        if start_holds < 1:
+            penalties["start_holds_missing"] += 1
+        elif start_holds > 2:
+            penalties["start_holds_excessive"] += (start_holds - 2) * 1
+
+        if end_holds < 1:
+            penalties["end_holds_missing"] += 1
+        elif end_holds > 2:
+            penalties["end_holds_excessive"] += (end_holds - 2) * 1
+
+        if any_holds < 1:
+            penalties["holds_missing"] += 1
+
+        if difficulty_tokens < 1:
+            penalties["difficulty_token_missing"] += 1
+        elif difficulty_tokens > 1:
+            penalties["difficulty_token_excessive"] += (difficulty_tokens - 1) * 1
+
+        if angle_tokens < 1:
+            penalties["angle_token_missing"] += 1
+        elif angle_tokens > 1:
+            penalties["angle_token_excessive"] += (angle_tokens - 1) * 1
+
+        return penalties
+
+    def compute_penalty_score(self, penalties):
+        penalty_factor = 0.1
+        penalty_score = 0
+        for v in penalties.values():
+            penalty_score += v * penalty_factor
+        return penalty_score
