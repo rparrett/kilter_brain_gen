@@ -7,6 +7,7 @@ from tokenizers import Regex, Tokenizer, models, pre_tokenizers
 from tokenizers.processors import TemplateProcessing
 from tokenizers.trainers import WordLevelTrainer
 from transformers import PreTrainedTokenizerFast
+from cfg import special_tokens
 
 OUT_DIR = sys.argv[1] if len(sys.argv) > 1 else "models/climb_clm_tokenizer"
 
@@ -14,14 +15,10 @@ datasets = load_training_datasets()
 
 max_length = 48
 
-special_tokens = {
-    "bos_token": "<s>",
-    "eos_token": "</s>",
-    "unk_token": "<unk>",
-    "pad_token": "<pad>",
-}
 
-tokenizer = Tokenizer(models.WordLevel(unk_token=special_tokens["unk_token"]))
+tokenizer = Tokenizer(
+    models.WordLevel(unk_token=special_tokens["unk_token"]),
+)
 tokenizer.enable_padding(length=max_length, pad_token=special_tokens["pad_token"])
 tokenizer.enable_truncation(max_length=max_length)
 added = tokenizer.add_special_tokens(list(special_tokens.values()))

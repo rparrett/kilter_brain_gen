@@ -29,3 +29,11 @@ def get_latest_checkpoint_path():
         latest_dir.rglob("checkpoint-*"), key=lambda p: int(p.name.split("-")[-1])
     )
     return latest_checkpoint_in_dir
+
+
+special_tokens = {
+    "bos_token": "<s>",
+    "eos_token": "</s>",
+    "unk_token": "<unk>",
+    "pad_token": "<pad>",
+}

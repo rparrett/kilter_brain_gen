@@ -59,6 +59,7 @@ class Penalizer:
     difficulty_tokens = set()
 
     def __init__(self, tokenizer):
+        self.tokenizer = tokenizer
         for s, t in tokenizer.get_vocab().items():
             if "r12" in s:
                 self.start_hold_tokens.add(t)
@@ -66,10 +67,21 @@ class Penalizer:
                 self.end_hold_tokens.add(t)
             elif "r13" in s:
                 self.any_hold_tokens.add(t)
-            elif "a" in s:
+            elif "a" in s and s != "<pad>":
                 self.angle_tokens.add(t)
-            elif "d" in s:
+            elif "d" in s and s != "<pad>":
                 self.difficulty_tokens.add(t)
+
+    def get_token_sets(self):
+        vocab = self.tokenizer.get_vocab()
+        lookup = {v: k for k, v in vocab.items()}
+        return {
+            "start_hold_tokens": [(lookup[t], t) for t in self.start_hold_tokens],
+            "end_hold_tokens": [(lookup[t], t) for t in self.end_hold_tokens],
+            "any_hold_tokens": [(lookup[t], t) for t in self.any_hold_tokens],
+            "angle_tokens": [(lookup[t], t) for t in self.angle_tokens],
+            "difficulty_tokens": [(lookup[t], t) for t in self.difficulty_tokens],
+        }
 
     def compute_penalties(self, y):
         penalties = defaultdict(int)
@@ -85,7 +97,7 @@ class Penalizer:
             for token in pred:
                 # No token should appear more than once
                 if token in unique_tokens:
-                    penalties["repeated"] += 1
+                    penalties["repeated_tokens"] += 1
                 unique_tokens.add(token)
 
                 if token in self.start_hold_tokens:

@@ -1,11 +1,14 @@
 import re
 import sys
 from pprint import pprint
+from rich.console import Console
 
+console = Console()
 from transformers import AutoTokenizer, GPT2Config, GPT2LMHeadModel, pipeline
 
 from cfg import get_latest_checkpoint_path
 from data import Penalizer
+from model import AltGenerator, get_pipeline
 
 checkpoint_path = (
     sys.argv[1] if len(sys.argv) > 1 else get_latest_checkpoint_path().as_posix()
@@ -20,9 +23,10 @@ tokenizer = AutoTokenizer.from_pretrained(tokenizer_dir)
 config = GPT2Config.from_pretrained(checkpoint_path)
 model = GPT2LMHeadModel.from_pretrained(checkpoint_path)
 
-generator = pipeline(
-    "text-generation", model=model, tokenizer=tokenizer, max_new_tokens=20
-)
+pipe = get_pipeline(model, tokenizer)
+# generator = pipe
+alt_gen = AltGenerator(model, tokenizer)
+generator = alt_gen.generate
 
 prompts = [
     "a20d20",  # v5 at 20 degrees
@@ -43,6 +47,7 @@ def remove_and_get_non_pr(output):
 
 
 penalizer = Penalizer(tokenizer)
+console.print(penalizer.get_token_sets())
 
 
 def get_ad(non_pr):
@@ -56,28 +61,68 @@ def get_ad(non_pr):
     return a, d
 
 
-for pn, prompt in enumerate(prompts):
-    for n in range(5):
-        result = generator(prompt, do_sample=True, num_beams=1)[0]
-        print(result["generated_text"])
-        (out, non_pr) = remove_and_get_non_pr(result["generated_text"])
-        out = out.replace(" ", "")
+# Note: Repeated padding tokens are bad for penalty
+# also:
+#     'angle_tokens': [
+#        ('a65', 1056),
+#        ('<pad>', 3),
 
-        toks = tokenizer(out)["input_ids"]
-        print()
-        print("tokens:")
-        print(toks)
-        print()
-        penalties = penalizer.compute_penalties(toks)
-        penalty_score = penalizer.compute_penalty_score(penalties)
-        print("penalty score:", penalty_score)
-        pprint(
-            list(f"{k}: {v}" for k, v in sorted(penalties.items(), key=lambda x: x[1]))
-        )
+stats = []
+n = 5
+for pn, prompt in enumerate(prompts):
+    gen_result = generator(prompt, num_return_sequences=n, do_sample=True, num_beams=1)
+    print(gen_result)
+
+    pipe_result = pipe(
+        prompt,
+        num_return_sequences=n,
+        do_sample=True,
+        num_beams=1,
+    )
+    print(pipe_result)
+
+    for n, result in enumerate(gen_result):
+        text = result["generated_text"]
+
+        (out, non_pr) = remove_and_get_non_pr(text)
+        out = out.replace(" ", "")
 
         a, d = get_ad(non_pr)
 
         name = ".".join([checkpoint_path, str(pn), str(n), a, d])
         print()
-        print("out:")
-        print(name + "," + out)
+        console.print("out len:", len(out))
+        full_name = name + "," + out
+        print(full_name)
+
+        if "tokens" in result:
+            toks = [
+                x
+                for x in result["tokens"].flatten().tolist()
+                if x != tokenizer.pad_token_id
+            ]
+
+            print()
+            print("tokens:")
+            print(toks)
+            penalties = penalizer.compute_penalties(toks)
+            penalty_score = penalizer.compute_penalty_score(penalties)
+            print("penalty score:", sum(penalties.values()), penalty_score)
+            pprint(
+                list(
+                    f"{k}: {v}"
+                    for k, v in sorted(penalties.items(), key=lambda x: x[1])
+                )
+            )
+            stats.append(
+                (
+                    prompt,
+                    len(toks),
+                    penalty_score,
+                    full_name,
+                    ", ".join(k for k in penalties.keys()),
+                )
+            )
+
+print("Stats:")
+console.print(stats)
