@@ -133,4 +133,6 @@ print("Stats:")
 # console.print(stats)
 print()
 for stat in sorted(stats, key=lambda x: x[2], reverse=False):
-    console.print(stat[:3], stat[3], stat[4])
+    console.print(
+        stat[:3], "[cyan]" + stat[3] + "[/cyan]", "[yellow]" + stat[4] + "[/yellow]"
+    )
