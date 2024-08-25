@@ -67,6 +67,8 @@ def get_ad(non_pr):
 #     'angle_tokens': [
 #        ('a65', 1056),
 #        ('<pad>', 3),
+# repeated:
+# </s>
 
 stats = []
 n = 5

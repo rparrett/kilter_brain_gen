@@ -91,12 +91,20 @@ class Penalizer:
         any_holds = 0
         angle_tokens = 0
         difficulty_tokens = 0
-
+        lookup = {v: k for k, v in self.tokenizer.get_vocab().items()}
+        expected_repeats = set(
+            [
+                self.tokenizer.pad_token_id,
+                self.tokenizer.eos_token_id,
+                self.tokenizer.bos_token_id,
+            ]
+        )
         for pred in [y]:
             unique_tokens = set()
             for token in pred:
                 # No token should appear more than once
-                if token in unique_tokens:
+                if token in unique_tokens and token not in expected_repeats:
+                    print(lookup[token])
                     penalties["repeated_tokens"] += 1
                 unique_tokens.add(token)
 
