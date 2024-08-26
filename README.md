@@ -14,6 +14,7 @@ Generating kilter board problems with transformers
 
 - Install [just](https://github.com/casey/just?tab=readme-ov-file#installation)
 - Run `just sync-deps`
+- Windows: TODO somehow install torch with CUDA support
 
 ### Train the `climb` model
 

@@ -6,7 +6,7 @@ python3 := if os() == 'windows' {
   "venv/bin/python3"
 }
 os_python := if os() == 'windows' {
-  "python"
+  "winpty python"
 } else {
   "python3"
 }
