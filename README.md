@@ -4,6 +4,13 @@ Generating kilter board problems with transformers
 
 ## Usage
 
+### Clone the repo
+
+```bash
+git clone https://github.com/rparrett/kilter_brain_gen
+cd kilter_brain_gen
+```
+
 ### Get the kilter sqlite database
 
 - Install [`sqlite`](https://www.sqlite.org/download.html)
@@ -13,8 +20,9 @@ Generating kilter board problems with transformers
 ### Install dependencies
 
 - Install [just](https://github.com/casey/just?tab=readme-ov-file#installation)
+- Run `just venv`
 - Run `just sync-deps`
-- Windows: TODO somehow install torch with CUDA support
+- Windows Only: Run `just torch-cuda`
 
 ### Train the `climb` model
 

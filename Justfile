@@ -45,6 +45,10 @@ export FLASK_APP := "src/api/api.py"
   ({{python3}} -m pip install --upgrade pip pip-tools && \
   {{python3}} -m piptools compile --resolver=backtracking && {{python3}} -m pip install -r requirements.txt)
 
+# TODO I don't know how to make this work with piptools
+@torch-cuda:
+  {{python3}} -m pip install --force-reinstall --no-deps torch --index-url https://download.pytorch.org/whl/cu124
+
 @mypy:
   {{python3}} -m mypy --pretty {{module_dir}}/
 
