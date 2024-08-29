@@ -35,6 +35,7 @@ prompts = [
     "a40d15",  # v2 at 40 degrees
     "a10d10",  # v? at 10 degrees
     "<s>",  # empty prompt
+    "a20d20p1143r12p1162r12p1394r14",  # test
 ]
 
 
