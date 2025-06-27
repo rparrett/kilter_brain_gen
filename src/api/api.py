@@ -1,8 +1,8 @@
 import json
 import os.path
 import pprint
-from random import randint
 import re
+from random import randint
 from uuid import uuid4
 
 import randomname
@@ -123,19 +123,19 @@ cors = CORS(app)
 app.config["CORS_HEADERS"] = "Content-Type"
 
 
-@app.route("/generate", methods = ['POST'])
+@app.route("/generate", methods=["POST"])
 @cross_origin()
 def generate():
     data = request.json
 
-    num = min(data.get('num', 1), 10)
+    num = min(data.get("num", 1), 10)
 
     # TODO error if no prompt
 
     climbs = []
 
     for _ in range(num):
-        result = generator(data['prompt'], do_sample=True, num_beams=1)[0]
+        result = generator(data["prompt"], do_sample=True, num_beams=1)[0]
         (out, non_pr) = remove_and_get_non_pr(result["generated_text"])
         out = out.replace(" ", "")
 
@@ -156,16 +156,18 @@ def generate():
         # }
         # name = name_generator("", **name_params)[0]['generated_text']
 
-        name = randomname.generate() + '-' + str(randint(100,999))
+        name = randomname.generate() + "-" + str(randint(100, 999))
 
-        climbs.append({
-            "uuid": uuid4().hex,
-            "frames": out,
-            "name": name,
-            "description": "beep boop",
-            "angle": a,
-            "difficulty": d,
-        })
+        climbs.append(
+            {
+                "uuid": uuid4().hex,
+                "frames": out,
+                "name": name,
+                "description": "beep boop",
+                "angle": a,
+                "difficulty": d,
+            }
+        )
 
     return climbs
 
@@ -175,7 +177,7 @@ def generate():
 def publish():
     data = request.json
 
-    is_draft = data.get('is_draft', False)
+    is_draft = data.get("is_draft", False)
 
     if not os.path.isfile("token.json"):
         return {"error": "No stored token"}
