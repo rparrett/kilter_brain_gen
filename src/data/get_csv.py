@@ -6,17 +6,18 @@ import os
 import re
 from pathlib import Path
 
+
 def get_climbs_csv():
     """Extract climbs data from SQLite database and save as CSV."""
-    
+
     # Paths relative to project root
     project_root = Path(__file__).parent.parent.parent
     db_path = project_root / "data" / "climbs.sqlite3"
     csv_path = project_root / "data" / "climbs.csv"
-    
+
     # Ensure data directory exists
     csv_path.parent.mkdir(exist_ok=True)
-    
+
     # SQL query from the original script
     query = """
     SELECT
@@ -47,13 +48,13 @@ def get_climbs_csv():
         LENGTH(frames) >= 48 AND
         LENGTH(frames) <= 256;
     """
-    
+
     def regexp(pattern, text):
         """Custom REGEXP function for SQLite."""
         if text is None:
             return False
         return bool(re.search(pattern, str(text)))
-    
+
     try:
         # Connect to SQLite database
         with sqlite3.connect(db_path) as conn:
@@ -61,24 +62,25 @@ def get_climbs_csv():
             conn.create_function("REGEXP", 2, regexp)
             cursor = conn.cursor()
             cursor.execute(query)
-            
+
             # Get column names
             columns = [description[0] for description in cursor.description]
-            
+
             # Write to CSV
-            with open(csv_path, 'w', newline='', encoding='utf-8') as csvfile:
+            with open(csv_path, "w", newline="", encoding="utf-8") as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow(columns)  # Header
                 writer.writerows(cursor.fetchall())  # Data
-        
+
         print(f"Successfully exported climbs data to {csv_path}")
-        
+
     except sqlite3.Error as e:
         print(f"SQLite error: {e}")
         raise
     except Exception as e:
         print(f"Error: {e}")
         raise
+
 
 if __name__ == "__main__":
     get_climbs_csv()
