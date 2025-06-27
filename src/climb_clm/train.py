@@ -1,7 +1,10 @@
+import argparse
 import pprint
+from datetime import datetime
 from pathlib import Path
 
 from data import load_training_datasets, preprocess_datasets
+from train_tokenizer import train_tokenizer
 from transformers import (
     AutoTokenizer,
     DataCollatorForLanguageModeling,
@@ -12,18 +15,25 @@ from transformers import (
 )
 from transformers.trainer_utils import SchedulerType
 
-OUT_DIR = "models/climb_clm"
+parser = argparse.ArgumentParser(description="Train CLM model")
+parser.add_argument("--run-name", type=str, help="Name for this training run")
+args = parser.parse_args()
+
+# Create run name if not provided
+if args.run_name is None:
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    f"run_{timestamp}"
+
+OUT_DIR = f"models/climb_clm/{args.run_name}"
 
 datasets = load_training_datasets()
 
 print(f"Train: {len(datasets['train'])} Test: {len(datasets['test'])}")
 pprint.pprint(datasets["train"][0])
 
-if not (Path(OUT_DIR) / "tokenizer_config.json").exists():
-    print(f"Expecting a trained tokenizer @ {OUT_DIR}. Try train_tokenizer.py.")
-    exit(1)
-
-tokenizer = AutoTokenizer.from_pretrained(OUT_DIR)
+# Train tokenizer for this run
+print("Training tokenizer...")
+tokenizer = train_tokenizer(datasets, OUT_DIR)
 
 preprocess_datasets(datasets, tokenizer)
 
