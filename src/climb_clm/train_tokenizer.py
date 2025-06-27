@@ -53,6 +53,8 @@ def train_tokenizer(datasets, output_dir, max_length=48):
         padding_side="right",
         truncation_side="right",
     )
+
+    print("Special tokens:")
     pprint.pprint(special_tokens)
     added = tokenizer_pretrained.add_special_tokens(special_tokens)
     print(f"Added {added} special tokens to PreTrainedTokenizer")
