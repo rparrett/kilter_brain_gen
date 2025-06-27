@@ -60,42 +60,36 @@ generator = pipeline(
 prompts = [
     "a20d20",  # v5 at 20 degrees
     "a40d15",  # v2 at 40 degrees
-    "<s>",     # empty prompt
+    "<s>",  # empty prompt
     "a20d20p1143r12p1162r12p1394r14",  # partial climb
 ]
 
 
-def remove_and_get_non_pr(output):
-    non_pr = []
+def process_output(output):
+    """Process generated text and extract frames, angle, and difficulty."""
+    # Extract frames
+    frames = re.findall(r"p\d+r\d+", output)
+    frames_str = "".join(frames)
 
-    def remove_non_pr(match):
-        non_pr.append(match.group(1))
-        return ""
+    # Extract angle
+    angle_match = re.search(r"a(\d+|unk)", output)
+    angle = angle_match.group(1) if angle_match else "unk"
 
-    output = re.sub(r"([^pr\d]\d+|aunk|dunk)", remove_non_pr, output)
+    # Extract difficulty
+    difficulty_match = re.search(r"d(\d+|unk)", output)
+    difficulty = difficulty_match.group(1) if difficulty_match else "unk"
 
-    return (output, non_pr)
+    return {"frames": frames_str, "angle": angle, "difficulty": difficulty}
 
 
-for pn, prompt in enumerate(prompts):
-    for n in range(5):
+for prompt_i, prompt in enumerate(prompts):
+    for i in range(5):
         result = generator(prompt, do_sample=True, num_beams=1)[0]
 
-        (out, non_pr) = remove_and_get_non_pr(result["generated_text"])
-        out = out.replace(" ", "")
+        parsed = process_output(result["generated_text"])
 
-        # Strip angle and difficulty tokens from the frame string
+        name = ".".join(
+            [model_dir, str(prompt_i), str(i), parsed["angle"], parsed["difficulty"]]
+        )
 
-        a = None
-        d = None
-        for thing in non_pr:
-            if d == None and thing[0] == "d":
-                d = thing
-            if a == None and thing[0] == "a":
-                a = thing
-
-        # Format for kilter_brain
-
-        name = ".".join([model_dir, str(pn), str(n), a, d])
-
-        print(name + "," + out)
+        print(name + "," + parsed["frames"])
