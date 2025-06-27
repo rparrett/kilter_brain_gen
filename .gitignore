@@ -13,3 +13,7 @@ creds.json
 token.json
 climbs.csv
 models
+
+data/*.sqlite*
+data/*.csv
+data/*.json

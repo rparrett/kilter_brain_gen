@@ -11,18 +11,19 @@ git clone https://github.com/rparrett/kilter_brain_gen
 cd kilter_brain_gen
 ```
 
-### Get the kilter sqlite database
-
-- Install [`sqlite`](https://www.sqlite.org/download.html)
-- Use [boardlib](https://github.com/lemeryfertitta/BoardLib) or extract from a kilter `apk` file.
-- Run `get_csv.sh`
-
 ### Install dependencies
 
 We're using [uv](https://docs.astral.sh/uv/getting-started/installation/) for package and project management.
 
 - Run `uv sync`
 - (Windows / CUDA) (TODO, this might just work as-is)
+
+### Get climb data
+
+- Install [`sqlite`](https://www.sqlite.org/download.html)
+- Use [boardlib](https://github.com/lemeryfertitta/BoardLib), or extract the database from a kilter `apk` file, or ask someone who has it.
+- Move that database to `data/climbs.sqlite3`
+- Run `uv run src/data/get_csv.py`
 
 ### Train the `climb_clm` model
 
