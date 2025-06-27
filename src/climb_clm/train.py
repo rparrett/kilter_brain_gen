@@ -65,13 +65,14 @@ print(
 training_args = TrainingArguments(
     output_dir=OUT_DIR,  # output directory to where save model checkpoint
     eval_strategy="steps",  # evaluate each `logging_steps` steps
+    save_strategy="best",
+    save_total_limit=3,  # save disk space
+    logging_steps=500,  # evaluate and log model checkpoints every n steps
     overwrite_output_dir=True,
     num_train_epochs=3,
     per_device_train_batch_size=16,  # put it as high as your GPU memory fits; "if gradient_accumulation_steps > 1, this is the micro-batch size" --NanoGPT
     gradient_accumulation_steps=1,  # "used to simulate larger batch sizes"
     per_device_eval_batch_size=16,
-    logging_steps=100,  # evaluate and log model checkpoints every n steps
-    save_steps=400,  # save model checkpoints every n steps
     learning_rate=1e-5,
     adam_beta1=0.9,
     adam_beta2=0.999,
@@ -80,7 +81,6 @@ training_args = TrainingArguments(
     greater_is_better=False,  # whether the best model is the one with the highest or lowest evaluation metric, e.g. loss vs accuracy
     metric_for_best_model="eval_loss",  # use eval_loss to compare models
     load_best_model_at_end=True,  # whether to load the best model (in terms of loss) at the end of training
-    save_total_limit=3,  # save disk space
 )
 
 trainer = Trainer(
