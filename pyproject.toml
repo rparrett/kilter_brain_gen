@@ -12,7 +12,7 @@ dependencies = [
     "requests>=2.32.4",
     "tensorboard>=2.19.0",
     "tokenizer>=3.4.5",
-    "transformers[torch]==4.41.1",
+    "transformers[torch]",
 ]
 
 [dependency-groups]
