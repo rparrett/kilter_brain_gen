@@ -64,7 +64,7 @@ print(
 
 training_args = TrainingArguments(
     output_dir=OUT_DIR,  # output directory to where save model checkpoint
-    evaluation_strategy="steps",  # evaluate each `logging_steps` steps
+    eval_strategy="steps",  # evaluate each `logging_steps` steps
     overwrite_output_dir=True,
     num_train_epochs=3,
     per_device_train_batch_size=16,  # put it as high as your GPU memory fits; "if gradient_accumulation_steps > 1, this is the micro-batch size" --NanoGPT

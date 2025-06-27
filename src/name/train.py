@@ -60,7 +60,7 @@ data_collator = DataCollatorForLanguageModeling(
 
 training_args = TrainingArguments(
     output_dir=out_dir,  # output directory to where save model checkpoint
-    evaluation_strategy="steps",  # evaluate each `logging_steps` steps
+    eval_strategy="steps",  # evaluate each `logging_steps` steps
     overwrite_output_dir=True,
     num_train_epochs=2,  # number of training epochs, feel free to tweak
     per_device_train_batch_size=4,  # the training batch size, put it as high as your GPU memory fits
