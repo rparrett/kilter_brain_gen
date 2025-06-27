@@ -84,6 +84,8 @@ for pn, prompt in enumerate(prompts):
         (out, non_pr) = remove_and_get_non_pr(result["generated_text"])
         out = out.replace(" ", "")
 
+        # Strip angle and difficulty tokens from the frame string
+
         a = None
         d = None
         for thing in non_pr:
@@ -91,6 +93,8 @@ for pn, prompt in enumerate(prompts):
                 d = thing
             if a == None and thing[0] == "a":
                 a = thing
+
+        # Format for kilter_brain
 
         name = ".".join([model_dir, str(pn), str(n), a, d])
 
