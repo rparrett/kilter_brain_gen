@@ -60,6 +60,8 @@ generator = pipeline(
 prompts = [
     "a20d20",  # v5 at 20 degrees
     "a40d15",  # v2 at 40 degrees
+    "<s>",     # empty prompt
+    "a20d20p1143r12p1162r12p1394r14",  # partial climb
 ]
 
 
