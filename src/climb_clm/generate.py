@@ -53,15 +53,13 @@ tokenizer = AutoTokenizer.from_pretrained(token_dir)
 config = GPT2Config.from_pretrained(model_dir)
 model = GPT2LMHeadModel.from_pretrained(model_dir)
 
-generator = pipeline(
-    "text-generation", model=model, tokenizer=tokenizer, max_new_tokens=20
-)
+device = next(model.parameters()).device
 
 prompts = [
     "a20d20",  # v5 at 20 degrees
     "a40d15",  # v2 at 40 degrees
-    "<s>",  # empty prompt
     "a20d20p1143r12p1162r12p1394r14",  # partial climb
+    "",  # empty
 ]
 
 
@@ -84,9 +82,24 @@ def process_output(output):
 
 for prompt_i, prompt in enumerate(prompts):
     for i in range(5):
-        result = generator(prompt, do_sample=True, num_beams=1)[0]
+        model_inputs = tokenizer(
+            # explicitly add the bos token since we are using add_special_tokens=False
+            [tokenizer.bos_token + prompt],
+            return_tensors="pt",
+            # don't add eos token to the prompt, because the model will not generate anything after that token
+            add_special_tokens=False,
+        ).to(device)
 
-        parsed = process_output(result["generated_text"])
+        generated_ids = model.generate(
+            **model_inputs,
+            num_beams=1,
+            do_sample=True,
+            # transformers is emitting a warning saying that it is doing this, so we will just do it
+            pad_token_id=tokenizer.eos_token_id,
+        )
+        result = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+
+        parsed = process_output(result)
 
         name = ".".join(
             [model_dir, str(prompt_i), str(i), parsed["angle"], parsed["difficulty"]]
