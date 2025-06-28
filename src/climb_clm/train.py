@@ -12,6 +12,7 @@ from transformers import (
     GPT2LMHeadModel,
     Trainer,
     TrainingArguments,
+    EarlyStoppingCallback,
 )
 from transformers.trainer_utils import SchedulerType
 
@@ -69,7 +70,7 @@ training_args = TrainingArguments(
     save_total_limit=3,  # save disk space
     logging_steps=500,  # evaluate and log model checkpoints every n steps
     overwrite_output_dir=True,
-    num_train_epochs=3,
+    num_train_epochs=30,
     per_device_train_batch_size=16,  # put it as high as your GPU memory fits; "if gradient_accumulation_steps > 1, this is the micro-batch size" --NanoGPT
     gradient_accumulation_steps=1,  # "used to simulate larger batch sizes"
     per_device_eval_batch_size=16,
@@ -89,6 +90,11 @@ trainer = Trainer(
     data_collator=data_collator,
     train_dataset=datasets["train"],
     eval_dataset=datasets["test"],
+    callbacks=[
+        EarlyStoppingCallback(
+            early_stopping_patience=5, early_stopping_threshold=0.0001
+        ),
+    ],
 )
 
 trainer.train()

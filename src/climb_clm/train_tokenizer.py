@@ -99,5 +99,3 @@ if __name__ == "__main__":
     OUT_DIR = "models/climb_clm"
     datasets = load_training_datasets()
     tokenizer = train_tokenizer(datasets, OUT_DIR)
-
-
