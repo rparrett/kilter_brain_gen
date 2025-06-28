@@ -46,6 +46,8 @@ def train_tokenizer(datasets, output_dir, max_length=48):
     trainer = WordLevelTrainer(special_tokens=list(special_tokens.values()))
     tokenizer.train_from_iterator(batch_iterator(datasets, batch_size), trainer=trainer)
 
+    inspect_tokenizer(tokenizer)
+
     # Convert to PreTrainedTokenizerFast
     tokenizer_pretrained = PreTrainedTokenizerFast(
         tokenizer_object=tokenizer,
@@ -53,8 +55,6 @@ def train_tokenizer(datasets, output_dir, max_length=48):
         padding_side="right",
         truncation_side="right",
     )
-
-    print("Special tokens:")
     pprint.pprint(special_tokens)
     added = tokenizer_pretrained.add_special_tokens(special_tokens)
     print(f"Added {added} special tokens to PreTrainedTokenizer")
@@ -75,6 +75,9 @@ def inspect_tokenizer(tokenizer):
     print("Last 25:")
     for i in range(len(vocab_list) - 25, len(vocab_list), 5):
         pprint.pp(vocab_list[i : i + 5], compact=True, width=100)
+    samples = ["p1596r15p1597r14", "p1595r15p1596r12", "a40d15p1595r15p1596r12"]
+    for sample in samples:
+        inspect_sample(tokenizer, sample)
 
 
 def yield_collapse_repeats(encoded_tokens):
@@ -97,7 +100,4 @@ if __name__ == "__main__":
     datasets = load_training_datasets()
     tokenizer = train_tokenizer(datasets, OUT_DIR)
 
-    inspect_tokenizer(tokenizer)
-    samples = ["p1596r15p1597r14", "p1595r15p1596r12", "a40d15p1595r15p1596r12"]
-    for sample in samples:
-        inspect_sample(tokenizer, sample)
+
