@@ -10,6 +10,7 @@ dependencies = [
     "flask-cors>=6.0.1",
     "randomname>=0.2.1",
     "requests>=2.32.4",
+    "rich>=14.0.0",
     "tensorboard>=2.19.0",
     "tokenizer>=3.4.5",
     "transformers[torch]",
