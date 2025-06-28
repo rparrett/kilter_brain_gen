@@ -92,7 +92,7 @@ trainer = Trainer(
         EarlyStoppingCallback(
             early_stopping_patience=5, early_stopping_threshold=0.0001
         ),
-        PenaltyStatsCallback(tokenizer, num_routes=100),
+        PenaltyStatsCallback(tokenizer),
     ],
 )
 
