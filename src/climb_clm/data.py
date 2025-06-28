@@ -29,6 +29,8 @@ def load_training_datasets():
         split="train",
     )
 
+    dataset = dataset.filter(lambda example: example["quality_average"] >= 2.5)
+
     datasets = dataset.map(add_prefix).train_test_split()
     return datasets
 
