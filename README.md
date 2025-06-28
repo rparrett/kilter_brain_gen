@@ -16,7 +16,7 @@ cd kilter_brain_gen
 We're using [uv](https://docs.astral.sh/uv/getting-started/installation/) for package and project management.
 
 - Run `uv sync`
-- (Windows / CUDA) (TODO, this might just work as-is)
+- (Windows / CUDA) (TODO, this might be configured correctly in `pyproject.toml`)
 
 ### Get climb data
 
@@ -27,16 +27,16 @@ We're using [uv](https://docs.astral.sh/uv/getting-started/installation/) for pa
 
 ### Train the `climb_clm` model
 
-- `uv run src/climb_clm/train_tokenizer.py`
-- `uv run src/climb_clm/train.py`
+`uv run src/climb_clm/train.py`
 
 ### Generate some climbs
 
-- `uv run src/climb_clm/generate.py`
+`uv run src/climb_clm/generate.py`
 
 ### Run the API server
 
 - `uv run flask -A src/api/api.py run`
+- Test with `curl -X POST -H "Content-Type: application/json" -d '{"prompt":""}' 'http://127.0.0.1:5000/generate'`
 - Debug builds of [`kilter_brain`](https://github.com/rparrett/kilter_brain) will connect to the local server.
 
 ## Development
