@@ -31,7 +31,7 @@ class PenaltyStatsCallback(TensorBoardCallback):
     def on_evaluate(self, args, state, control, model, logs=None, **kwargs):
         """Generate routes and log penalty statistics during evaluation."""
         current_step = state.global_step
-        print()
+        print(flush=True)
 
         penalty_logs = {}
         for prompt, prompt_name in self.prompts:
@@ -62,6 +62,8 @@ class PenaltyStatsCallback(TensorBoardCallback):
                 self.tb_writer.add_scalar(metric_name, value, current_step)
         else:
             print("Warning: TensorBoard writer not available")
+
+        print(flush=True)
 
     def _generate_and_analyze_routes(self, model, prompt):
         """Generate routes for a given prompt and return penalty statistics."""
