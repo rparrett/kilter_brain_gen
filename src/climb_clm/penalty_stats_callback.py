@@ -21,8 +21,8 @@ class PenaltyStatsCallback(TensorBoardCallback):
 
         if prompts is None:
             self.prompts = [
-                ("a20d20", "angle_difficulty"),
-                ("a20d20p1143r12p1162r12p1394r14", "partial_climb"),
+                ("a20d20", "ang_diff"),
+                ("a20d20p1143r12p1162r12p1394r14", "partial"),
                 ("", "empty"),
             ]
         else:
@@ -41,15 +41,13 @@ class PenaltyStatsCallback(TensorBoardCallback):
 
             penalty_stats = self._generate_and_analyze_routes(model, prompt)
 
-            penalty_logs[f"generation_{prompt_name}/penalty_free_pct"] = penalty_stats[
+            penalty_logs[f"gen_{prompt_name}/penalty_free_pct"] = penalty_stats[
                 "penalty_free_pct"
             ]
-            penalty_logs[f"generation_{prompt_name}/penalty_score"] = penalty_stats[
+            penalty_logs[f"gen_{prompt_name}/penalty_score"] = penalty_stats[
                 "penalty_score"
             ]
-            penalty_logs[f"generation_{prompt_name}/unique_pct"] = penalty_stats[
-                "unique_pct"
-            ]
+            penalty_logs[f"gen_{prompt_name}/unique_pct"] = penalty_stats["unique_pct"]
 
             print(
                 f"  Penalty-free: {penalty_stats['penalty_free_count']}/{self.num_routes} ({penalty_stats['penalty_free_pct']:.1f}%)"
