@@ -24,7 +24,8 @@ src_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(src_dir))
 
 from climb_clm.data import find_latest_checkpoint
-from climb_clm.generator import generate_climb
+from climb_clm.generator import generate_tokens, tokens_to_climb
+
 
 def get_frames_model():
     base_dir = "models/climb_clm"
@@ -36,7 +37,11 @@ def get_frames_model():
     else:
         raise Exception("Couldn't find a checkpoint")
 
-    return (AutoTokenizer.from_pretrained(token_dir), GPT2LMHeadModel.from_pretrained(model_dir))
+    return (
+        AutoTokenizer.from_pretrained(token_dir),
+        GPT2LMHeadModel.from_pretrained(model_dir),
+    )
+
 
 def get_name_generator():
     checkpoint = "1100"
@@ -82,7 +87,8 @@ def generate():
     climbs = []
 
     for _ in range(num):
-        climb = generate_climb(tokenizer, model, data["prompt"])
+        tokens = generate_tokens(tokenizer, model, data["prompt"])
+        climb = tokens_to_climb(tokenizer, tokens)
 
         name = randomname.generate() + "-" + str(randint(100, 999))
 

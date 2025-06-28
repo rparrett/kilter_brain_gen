@@ -1,6 +1,7 @@
 from pathlib import Path
 from datasets import Features, Value, load_dataset
 
+
 def add_prefix(example):
     a = "unk" if example["angle"] is None else example["angle"]
     d = (
@@ -49,6 +50,7 @@ def batch_iterator(datasets, batch_size):
     for i in range(0, len(datasets["train"]), batch_size):
         yield datasets["train"][i : i + batch_size]["frames"]
 
+
 def find_latest_checkpoint(base_dir):
     """Find the most recent checkpoint directory in the given base directory."""
     base_path = Path(base_dir)
@@ -65,6 +67,7 @@ def find_latest_checkpoint(base_dir):
     # Sort by modification time and return the most recent
     latest = max(checkpoint_dirs, key=lambda p: p.stat().st_mtime)
     return latest
+
 
 DIFFICULTY = {
     "1": "1a/V0",
