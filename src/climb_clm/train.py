@@ -1,12 +1,11 @@
 import argparse
 import pprint
 from datetime import datetime
-from pathlib import Path
 
 from data import load_training_datasets, preprocess_datasets
 from train_tokenizer import train_tokenizer
+from penalty_stats_callback import PenaltyStatsCallback
 from transformers import (
-    AutoTokenizer,
     DataCollatorForLanguageModeling,
     GPT2Config,
     GPT2LMHeadModel,
@@ -14,7 +13,6 @@ from transformers import (
     TrainingArguments,
     EarlyStoppingCallback,
 )
-from transformers.trainer_utils import SchedulerType
 
 parser = argparse.ArgumentParser(description="Train CLM model")
 parser.add_argument("--run-name", type=str, help="Name for this training run")
@@ -94,6 +92,7 @@ trainer = Trainer(
         EarlyStoppingCallback(
             early_stopping_patience=5, early_stopping_threshold=0.0001
         ),
+        PenaltyStatsCallback(tokenizer),
     ],
 )
 
