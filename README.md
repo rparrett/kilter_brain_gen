@@ -11,32 +11,47 @@ git clone https://github.com/rparrett/kilter_brain_gen
 cd kilter_brain_gen
 ```
 
-### Get the kilter sqlite database
-
-- Install [`sqlite`](https://www.sqlite.org/download.html)
-- Use [boardlib](https://github.com/lemeryfertitta/BoardLib) or extract from a kilter `apk` file.
-- Run `get_csv.sh`
-
 ### Install dependencies
 
-- Install [just](https://github.com/casey/just?tab=readme-ov-file#installation)
-- Run `just venv`
-- Run `just sync-deps`
-- Windows Only: Run `just torch-cuda`
+We're using [uv](https://docs.astral.sh/uv/getting-started/installation/) for package and project management.
 
-### Train the `climb` model
+- Run `uv sync`
+- (Windows / CUDA) (TODO, this might just work as-is)
 
-- `just run src/climb_clm/train_tokenizer.py`
-- `just run src/climb_clm/train.py`
+### Get climb data
+
+- Install [`sqlite`](https://www.sqlite.org/download.html)
+- Use [boardlib](https://github.com/lemeryfertitta/BoardLib), or extract the database from a kilter `apk` file, or ask someone who has it.
+- Move that database to `data/climbs.sqlite3`
+- Run `uv run src/data/get_csv.py`
+
+### Train the `climb_clm` model
+
+- `uv run src/climb_clm/train_tokenizer.py`
+- `uv run src/climb_clm/train.py`
 
 ### Generate some climbs
 
-- `just run src/climb_clm/generate.py`
+- `uv run src/climb_clm/generate.py`
 
 ### Run the API server
 
-- `just flask`
+- `uv run flask -A src/api/api.py run`
 - Debug builds of [`kilter_brain`](https://github.com/rparrett/kilter_brain) will connect to the local server.
+
+## Development
+
+### Linting
+
+`uv run ruff check`
+
+### Formatting
+
+`uv run ruff format`
+
+### Monitoring Experiments
+
+`uv run tensorboard --logdir models`
 
 ## TODO
 

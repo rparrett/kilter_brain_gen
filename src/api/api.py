@@ -1,12 +1,11 @@
 import json
 import os.path
 import pprint
-from random import randint
-import re
-from uuid import uuid4
-
 import randomname
 import requests
+
+from random import randint
+from uuid import uuid4
 from flask import Flask, request
 from flask_cors import CORS, cross_origin
 from transformers import (
@@ -17,24 +16,27 @@ from transformers import (
     pipeline,
 )
 
+import sys
+from pathlib import Path
 
-def get_frames_generator():
-    checkpoint = None
-    token_dir = "models/climb_clm"
-    model_dir = (
-        token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
-    )
+# Add the src directory to the Python path so we can import from sibling packages
+src_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(src_dir))
 
-    tokenizer = AutoTokenizer.from_pretrained(token_dir)
-    config = GPT2Config.from_pretrained(model_dir)
-    model = GPT2LMHeadModel.from_pretrained(model_dir)
+from climb_clm.data import find_latest_checkpoint
+from climb_clm.generator import generate_climb
 
-    generator = pipeline(
-        "text-generation", model=model, tokenizer=tokenizer, max_new_tokens=20
-    )
+def get_frames_model():
+    base_dir = "models/climb_clm"
 
-    return generator
+    latest_checkpoint_dir = find_latest_checkpoint(base_dir)
+    if latest_checkpoint_dir:
+        model_dir = str(latest_checkpoint_dir)
+        token_dir = str(latest_checkpoint_dir.parent)
+    else:
+        raise Exception("Couldn't find a checkpoint")
 
+    return (AutoTokenizer.from_pretrained(token_dir), GPT2LMHeadModel.from_pretrained(model_dir))
 
 def get_name_generator():
     checkpoint = "1100"
@@ -60,7 +62,7 @@ def get_name_generator():
     return generator
 
 
-generator = get_frames_generator()
+(tokenizer, model) = get_frames_model()
 # name_generator = get_name_generator()
 
 difficulties = {
@@ -105,67 +107,37 @@ difficulties = {
     "39": "9c+/V22",
 }
 
-
-def remove_and_get_non_pr(output):
-    non_pr = []
-
-    def remove_non_pr(match):
-        non_pr.append(match.group(1))
-        return ""
-
-    output = re.sub(r"([^pr\d]\d+|aunk|dunk)", remove_non_pr, output)
-
-    return (output, non_pr)
-
-
 app = Flask(__name__)
 cors = CORS(app)
 app.config["CORS_HEADERS"] = "Content-Type"
 
 
-@app.route("/generate", methods = ['POST'])
+@app.route("/generate", methods=["POST"])
 @cross_origin()
 def generate():
     data = request.json
 
-    num = min(data.get('num', 1), 10)
+    num = min(data.get("num", 1), 10)
 
     # TODO error if no prompt
 
     climbs = []
 
     for _ in range(num):
-        result = generator(data['prompt'], do_sample=True, num_beams=1)[0]
-        (out, non_pr) = remove_and_get_non_pr(result["generated_text"])
-        out = out.replace(" ", "")
+        climb = generate_climb(tokenizer, model, data["prompt"])
 
-        a = None
-        d = None
-        for thing in non_pr:
-            if d == None and thing[0] == "d":
-                d = thing[1:]
-                d = difficulties[d]
-            if a == None and thing[0] == "a":
-                a = thing[1:]
-                a = None if a == "unk" else int(a)
+        name = randomname.generate() + "-" + str(randint(100, 999))
 
-        # name_params = {
-        #     "do_sample": True,
-        #     "num_beams": 4,
-        #     "prefix": "<|startoftext|>"
-        # }
-        # name = name_generator("", **name_params)[0]['generated_text']
-
-        name = randomname.generate() + '-' + str(randint(100,999))
-
-        climbs.append({
-            "uuid": uuid4().hex,
-            "frames": out,
-            "name": name,
-            "description": "beep boop",
-            "angle": a,
-            "difficulty": d,
-        })
+        climbs.append(
+            {
+                "uuid": uuid4().hex,
+                "frames": climb["frames"],
+                "name": name,
+                "description": "beep boop",
+                "angle": climb["angle"],
+                "difficulty": climb["difficulty"],
+            }
+        )
 
     return climbs
 
@@ -175,7 +147,7 @@ def generate():
 def publish():
     data = request.json
 
-    is_draft = data.get('is_draft', False)
+    is_draft = data.get("is_draft", False)
 
     if not os.path.isfile("token.json"):
         return {"error": "No stored token"}

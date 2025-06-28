@@ -1,56 +1,60 @@
 import re
 import sys
+from pathlib import Path
 
+from generator import generate_climb
 from transformers import AutoTokenizer, GPT2Config, GPT2LMHeadModel, pipeline
 
-checkpoint = None
-if len(sys.argv) > 1:
-    checkpoint = sys.argv[1]
+# Import from the same directory
+current_dir = Path(__file__).parent
+sys.path.insert(0, str(current_dir))
+from data import find_latest_checkpoint
 
-token_dir = "models/climb_clm"
-model_dir = token_dir if checkpoint is None else token_dir + "/checkpoint-" + checkpoint
+base_dir = "models/climb_clm"
+
+checkpoint_path = None
+if len(sys.argv) > 1:
+    checkpoint_path = sys.argv[1]
+
+if checkpoint_path is None:
+    # Find the most recent checkpoint automatically
+    latest_checkpoint_dir = find_latest_checkpoint(base_dir)
+    if latest_checkpoint_dir:
+        model_dir = str(latest_checkpoint_dir)
+        token_dir = str(latest_checkpoint_dir.parent)
+        print(f"Using latest checkpoint: {model_dir}")
+        print(f"Tokenizer: {token_dir}")
+    else:
+        # Fallback to base directory
+        token_dir = base_dir
+        model_dir = base_dir
+        print("No checkpoints found, using base model directory")
+else:
+    # Use specified checkpoint path (relative to models/climb_clm/)
+    base_path = Path(base_dir)
+    model_dir = str(base_path / checkpoint_path)
+    token_dir = str((base_path / checkpoint_path).parent)
+    print(f"Using specified checkpoint: {model_dir}")
 
 tokenizer = AutoTokenizer.from_pretrained(token_dir)
 config = GPT2Config.from_pretrained(model_dir)
 model = GPT2LMHeadModel.from_pretrained(model_dir)
 
-generator = pipeline(
-    "text-generation", model=model, tokenizer=tokenizer, max_new_tokens=20
-)
+device = next(model.parameters()).device
 
 prompts = [
     "a20d20",  # v5 at 20 degrees
     "a40d15",  # v2 at 40 degrees
+    "a20d20p1143r12p1162r12p1394r14",  # partial climb
+    "",  # empty
 ]
 
+for prompt_i, prompt in enumerate(prompts):
+    for i in range(5):
+        climb = generate_climb(tokenizer, model, prompt)
 
-def remove_and_get_non_pr(output):
-    non_pr = []
+        name = ".".join(
+            [model_dir, str(prompt_i), str(i), climb["angle"], climb["difficulty"]]
+        )
 
-    def remove_non_pr(match):
-        non_pr.append(match.group(1))
-        return ""
-
-    output = re.sub(r"([^pr\d]\d+|aunk|dunk)", remove_non_pr, output)
-
-    return (output, non_pr)
-
-
-for pn, prompt in enumerate(prompts):
-    for n in range(5):
-        result = generator(prompt, do_sample=True, num_beams=1)[0]
-
-        (out, non_pr) = remove_and_get_non_pr(result["generated_text"])
-        out = out.replace(" ", "")
-
-        a = None
-        d = None
-        for thing in non_pr:
-            if d == None and thing[0] == "d":
-                d = thing
-            if a == None and thing[0] == "a":
-                a = thing
-
-        name = ".".join([model_dir, str(pn), str(n), a, d])
-
-        print(name + "," + out)
+        print(name + "," + climb["frames"])

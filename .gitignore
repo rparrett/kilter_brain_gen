@@ -1,6 +1,19 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
 creds.json
 token.json
 climbs.csv
 models
-venv
-*.pyc
+
+data/*.sqlite*
+data/*.csv
+data/*.json

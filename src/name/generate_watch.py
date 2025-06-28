@@ -22,7 +22,10 @@ class Handler(FileSystemEventHandler):
 
             model = GPT2LMHeadModel.from_pretrained(event.src_path)
             tokenizer = GPT2TokenizerFast.from_pretrained(
-                "gpt2", bos_token="<|startoftext|>", eos_token="<|endoftext|>", pad_token="<|pad|>"
+                "gpt2",
+                bos_token="<|startoftext|>",
+                eos_token="<|endoftext|>",
+                pad_token="<|pad|>",
             )
             model.resize_token_embeddings(len(tokenizer))
 

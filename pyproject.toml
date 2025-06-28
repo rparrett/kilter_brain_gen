@@ -1,0 +1,36 @@
+[project]
+name = "kilter-brain-gen"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = "~=3.12"
+dependencies = [
+    "datasets>=3.6.0",
+    "flask>=3.1.1",
+    "flask-cors>=6.0.1",
+    "randomname>=0.2.1",
+    "requests>=2.32.4",
+    "tensorboard>=2.19.0",
+    "tokenizer>=3.4.5",
+    "transformers[torch]",
+]
+
+[dependency-groups]
+dev = ["ruff>=0.12.1"]
+
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", marker = "sys_platform == 'darwin'" },
+    { index = "pytorch-cu128", marker = "sys_platform != 'darwin'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
