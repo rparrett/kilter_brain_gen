@@ -1,5 +1,3 @@
-import pprint
-import re
 import time
 
 from rich.console import Console
@@ -74,7 +72,7 @@ observer.start()
 try:
     while True:
         time.sleep(5)
-except:
+except KeyboardInterrupt:
     observer.stop()
     print("Observer Stopped")
 

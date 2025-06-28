@@ -1,5 +1,3 @@
-import pprint
-import re
 import time
 
 from rich.console import Console

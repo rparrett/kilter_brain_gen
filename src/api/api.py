@@ -10,7 +10,6 @@ from flask import Flask, request
 from flask_cors import CORS, cross_origin
 from transformers import (
     AutoTokenizer,
-    GPT2Config,
     GPT2LMHeadModel,
     GPT2TokenizerFast,
     pipeline,
@@ -23,8 +22,8 @@ from pathlib import Path
 src_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(src_dir))
 
-from climb_clm.data import find_latest_checkpoint
-from climb_clm.generator import generate_tokens, tokens_to_climb
+from climb_clm.data import find_latest_checkpoint  # noqa: E402
+from climb_clm.generator import generate_tokens, tokens_to_climb  # noqa: E402
 
 
 def get_frames_model():
@@ -57,7 +56,6 @@ def get_name_generator():
         eos_token="<|endoftext|>",
         pad_token="<|pad|>",
     )
-    config = GPT2Config.from_pretrained("gpt2")
     model = GPT2LMHeadModel.from_pretrained(model_dir)
 
     generator = pipeline(

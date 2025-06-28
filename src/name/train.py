@@ -22,7 +22,7 @@ features = Features(
 dataset = load_dataset(
     "csv", data_files="climbs.csv", delimiter=",", features=features, split="train"
 )
-dataset = dataset.filter(lambda example: example["name"] != None)
+dataset = dataset.filter(lambda example: example["name"] is not None)
 
 
 def wrap(example):
