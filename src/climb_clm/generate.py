@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 
 from generator import generate_climb
+from data import DIFFICULTY
 from transformers import AutoTokenizer, GPT2Config, GPT2LMHeadModel, pipeline
 
 # Import from the same directory
@@ -53,8 +54,10 @@ for prompt_i, prompt in enumerate(prompts):
     for i in range(5):
         climb = generate_climb(tokenizer, model, prompt)
 
-        name = ".".join(
-            [model_dir, str(prompt_i), str(i), climb["angle"], climb["difficulty"]]
+        difficulty = DIFFICULTY.get(climb["difficulty"], "V?")
+
+        name = " ".join(
+            [model_dir, f"p{str(prompt_i)}", f"#{str(i+1)}", f"{climb["angle"]}°", difficulty]
         )
 
         print(name + "," + climb["frames"])
