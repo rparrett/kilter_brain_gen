@@ -2,26 +2,13 @@ import re
 import sys
 from pathlib import Path
 
+from generator import generate_climb
 from transformers import AutoTokenizer, GPT2Config, GPT2LMHeadModel, pipeline
 
-
-def find_latest_checkpoint(base_dir):
-    """Find the most recent checkpoint directory in the given base directory."""
-    base_path = Path(base_dir)
-
-    # Find all checkpoint directories recursively
-    checkpoint_dirs = []
-    for checkpoint_dir in base_path.rglob("checkpoint-*"):
-        if checkpoint_dir.is_dir():
-            checkpoint_dirs.append(checkpoint_dir)
-
-    if not checkpoint_dirs:
-        return None
-
-    # Sort by modification time and return the most recent
-    latest = max(checkpoint_dirs, key=lambda p: p.stat().st_mtime)
-    return latest
-
+# Import from the same directory
+current_dir = Path(__file__).parent
+sys.path.insert(0, str(current_dir))
+from data import find_latest_checkpoint
 
 base_dir = "models/climb_clm"
 
@@ -62,47 +49,12 @@ prompts = [
     "",  # empty
 ]
 
-
-def process_output(output):
-    """Process generated text and extract frames, angle, and difficulty."""
-    # Extract frames
-    frames = re.findall(r"p\d+r\d+", output)
-    frames_str = "".join(frames)
-
-    # Extract angle
-    angle_match = re.search(r"a(\d+|unk)", output)
-    angle = angle_match.group(1) if angle_match else "unk"
-
-    # Extract difficulty
-    difficulty_match = re.search(r"d(\d+|unk)", output)
-    difficulty = difficulty_match.group(1) if difficulty_match else "unk"
-
-    return {"frames": frames_str, "angle": angle, "difficulty": difficulty}
-
-
 for prompt_i, prompt in enumerate(prompts):
     for i in range(5):
-        model_inputs = tokenizer(
-            # explicitly add the bos token since we are using add_special_tokens=False
-            [tokenizer.bos_token + prompt],
-            return_tensors="pt",
-            # don't add eos token to the prompt, because the model will not generate anything after that token
-            add_special_tokens=False,
-        ).to(device)
-
-        generated_ids = model.generate(
-            **model_inputs,
-            num_beams=1,
-            do_sample=True,
-            # transformers is emitting a warning saying that it is doing this, so we will just do it
-            pad_token_id=tokenizer.eos_token_id,
-        )
-        result = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-
-        parsed = process_output(result)
+        climb = generate_climb(tokenizer, model, prompt)
 
         name = ".".join(
-            [model_dir, str(prompt_i), str(i), parsed["angle"], parsed["difficulty"]]
+            [model_dir, str(prompt_i), str(i), climb["angle"], climb["difficulty"]]
         )
 
-        print(name + "," + parsed["frames"])
+        print(name + "," + climb["frames"])
