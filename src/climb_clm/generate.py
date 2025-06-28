@@ -81,7 +81,6 @@ for prompt_i, (prompt, prompt_label) in enumerate(prompts):
 
         print(name + "," + climb["frames"])
 
-        # Check if climb is penalty-free
         if climb_penalties:
             any_penalty_count += 1
 
