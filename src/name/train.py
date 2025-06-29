@@ -1,9 +1,10 @@
 import pprint
+import re
+import emoji
 
 from datasets import Features, Value, load_dataset
 from transformers import (
     DataCollatorForLanguageModeling,
-    GPT2Config,
     GPT2LMHeadModel,
     GPT2TokenizerFast,
     Trainer,
@@ -15,73 +16,65 @@ out_dir = "models/name"
 features = Features(
     {
         "name": Value("string"),
+        "quality_average": Value("float"),
     }
 )
+
+
+def is_valid(example):
+    text = str(example["name"])
+    return (
+        not any(char in emoji.EMOJI_DATA for char in text)
+        and not re.search(r"[\(\)\[\]]", text)
+        and not re.search(r"\d", text)
+    )
 
 
 dataset = load_dataset(
     "csv", data_files="climbs.csv", delimiter=",", features=features, split="train"
 )
 dataset = dataset.filter(lambda example: example["name"] is not None)
+dataset = dataset.filter(lambda example: example["quality_average"] >= 2.5)
+dataset = dataset.filter(is_valid)
+
+model_name = "gpt2"
+tokenizer = GPT2TokenizerFast.from_pretrained(model_name)
+tokenizer.pad_token = tokenizer.eos_token
+
+model = GPT2LMHeadModel.from_pretrained(model_name)
 
 
-def wrap(example):
-    example["name"] = "<|startoftext|>" + example["name"] + "<|endoftext|>"
-    return example
+def tokenize(batch):
+    return tokenizer(
+        batch["name"], truncation=True, padding="max_length", max_length=64
+    )
 
 
-dataset = dataset.map(wrap)
+tokenized = dataset.map(tokenize, batched=True)
 
-datasets = dataset.train_test_split()
+print(f"Names: {len(dataset)}")
+pprint.pprint(dataset[0])
+pprint.pprint(tokenized[0])
 
-config = GPT2Config.from_pretrained("gpt2")
-model = GPT2LMHeadModel.from_pretrained("gpt2", config=config)
-tokenizer = GPT2TokenizerFast.from_pretrained(
-    "gpt2", bos_token="<|startoftext|>", eos_token="<|endoftext|>", pad_token="<|pad|>"
-)
-model.resize_token_embeddings(len(tokenizer))
+tokenized = tokenized.remove_columns(["name", "quality_average"])
 
-tokenized_train = datasets["train"].map(
-    lambda examples: tokenizer(examples["name"]), batched=True
-)
-tokenized_test = datasets["test"].map(
-    lambda examples: tokenizer(examples["name"]), batched=True
-)
-
-pprint.pprint(datasets["train"][0])
-pprint.pprint(tokenized_train[0])
-
-tokenized_train = tokenized_train.remove_columns(["name"])
-tokenized_test = tokenized_test.remove_columns(["name"])
-
-data_collator = DataCollatorForLanguageModeling(
-    tokenizer=tokenizer, mlm=False, mlm_probability=0.15
-)
+data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
 
 training_args = TrainingArguments(
-    output_dir=out_dir,  # output directory to where save model checkpoint
-    eval_strategy="steps",  # evaluate each `logging_steps` steps
-    overwrite_output_dir=True,
-    num_train_epochs=2,  # number of training epochs, feel free to tweak
-    per_device_train_batch_size=4,  # the training batch size, put it as high as your GPU memory fits
-    gradient_accumulation_steps=1,  # accumulating the gradients before updating the weights
-    per_device_eval_batch_size=8,  # evaluation batch size
-    logging_steps=50,  # evaluate, log and save model checkpoints every 1000 step
-    save_steps=50,
+    output_dir=out_dir,
     report_to="tensorboard",
-    remove_unused_columns=False,
-    load_best_model_at_end=True,  # whether to load the best model (in terms of loss) at the end of training
-    save_total_limit=3,  # whether you don't have much space so you let only 3 model weights saved in the disk
-    weight_decay=0.05,  # ??? people seem to do this stuff when fine-tuning?
-    learning_rate=2e-6,  # ??? people seem to do this stuff when fine-tuning?
+    per_device_train_batch_size=8,
+    num_train_epochs=5,
+    save_steps=500,
+    logging_steps=50,
+    save_total_limit=2,
 )
 
 trainer = Trainer(
     model=model,
     args=training_args,
     data_collator=data_collator,
-    train_dataset=tokenized_train,
-    eval_dataset=tokenized_test,
+    train_dataset=tokenized,
 )
 
 trainer.train()
