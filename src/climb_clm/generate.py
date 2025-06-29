@@ -6,10 +6,8 @@ from data import DIFFICULTY
 from penalizer import Penalizer
 from transformers import AutoTokenizer, GPT2Config, GPT2LMHeadModel
 
-# Import from the same directory
-current_dir = Path(__file__).parent
-sys.path.insert(0, str(current_dir))
-from data import find_latest_checkpoint  # noqa: E402
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from utils import find_latest_checkpoint # noqa: E402
 
 base_dir = "models/climb_clm"
 
