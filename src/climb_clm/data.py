@@ -1,4 +1,3 @@
-from pathlib import Path
 from datasets import Features, Value, load_dataset
 
 
@@ -51,6 +50,7 @@ def preprocess_datasets(datasets, tokenizer):
 def batch_iterator(datasets, batch_size):
     for i in range(0, len(datasets["train"]), batch_size):
         yield datasets["train"][i : i + batch_size]["frames"]
+
 
 DIFFICULTY = {
     "1": "1a/V0",

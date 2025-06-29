@@ -7,7 +7,7 @@ from penalizer import Penalizer
 from transformers import AutoTokenizer, GPT2Config, GPT2LMHeadModel
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils import find_latest_checkpoint # noqa: E402
+from utils import find_latest_checkpoint  # noqa: E402
 
 base_dir = "models/climb_clm"
 

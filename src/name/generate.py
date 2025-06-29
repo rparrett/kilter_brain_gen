@@ -8,7 +8,7 @@ from transformers import GPT2LMHeadModel, GPT2TokenizerFast
 
 # Add src to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
-from utils import find_latest_checkpoint # noqa: E402
+from utils import find_latest_checkpoint  # noqa: E402
 
 console = Console()
 
