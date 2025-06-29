@@ -22,7 +22,7 @@ from pathlib import Path
 src_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(src_dir))
 
-from climb_clm.data import find_latest_checkpoint  # noqa: E402
+from utils import find_latest_checkpoint  # noqa: E402
 from climb_clm.generator import generate_tokens, tokens_to_climb  # noqa: E402
 
 
