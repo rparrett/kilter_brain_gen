@@ -9,7 +9,7 @@ from transformers import AutoTokenizer, GPT2Config, GPT2LMHeadModel
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from utils import find_latest_checkpoint  # noqa: E402
 
-base_dir = "models/climb_clm"
+base_dir = "models/climb_gpt"
 
 checkpoint_path = None
 if len(sys.argv) > 1:
@@ -29,7 +29,7 @@ if checkpoint_path is None:
         model_dir = base_dir
         print("No checkpoints found, using base model directory")
 else:
-    # Use specified checkpoint path (relative to models/climb_clm/)
+    # Use specified checkpoint path (relative to models/climb_gpt/)
     base_path = Path(base_dir)
     model_dir = str(base_path / checkpoint_path)
     token_dir = str((base_path / checkpoint_path).parent)

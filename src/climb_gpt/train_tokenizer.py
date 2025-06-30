@@ -96,6 +96,6 @@ def inspect_sample(tokenizer, input):
 
 # Keep the standalone functionality for direct script execution
 if __name__ == "__main__":
-    OUT_DIR = "models/climb_clm"
+    OUT_DIR = "models/climb_gpt"
     datasets = load_training_datasets()
     tokenizer = train_tokenizer(datasets, OUT_DIR)

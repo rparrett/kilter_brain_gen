@@ -23,7 +23,7 @@ if args.run_name is None:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     f"run_{timestamp}"
 
-OUT_DIR = f"models/climb_clm/{args.run_name}"
+OUT_DIR = f"models/climb_gpt/{args.run_name}"
 
 datasets = load_training_datasets()
 
@@ -48,9 +48,9 @@ model_config = GPT2Config(
         "bos_token_id": tokenizer.bos_token_id,
         "eos_token_id": tokenizer.eos_token_id,
         "vocab_size": tokenizer.vocab_size,
-        "n_embd": 256,  # 768
-        "n_head": 4,  # 12
-        "n_layer": 4,  # 12
+        "n_embd": 192,  # 768
+        "n_head": 3,  # 12
+        "n_layer": 3,  # 12
         "n_positions": 128,  # 1024
         "n_ctx": 128,
     }

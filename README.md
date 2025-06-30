@@ -25,13 +25,13 @@ We're using [uv](https://docs.astral.sh/uv/getting-started/installation/) for pa
 - Move that database to `data/climbs.sqlite3`
 - Run `uv run src/data/get_csv.py`
 
-### Train the `climb_clm` model
+### Train the `climb_gpt` model
 
-`uv run src/climb_clm/train.py`
+`uv run src/climb_gpt/train.py`
 
 ### Generate some climbs
 
-`uv run src/climb_clm/generate.py`
+`uv run src/climb_gpt/generate.py`
 
 ### Run the API server
 

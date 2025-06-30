@@ -23,11 +23,11 @@ src_dir = Path(__file__).parent.parent
 sys.path.insert(0, str(src_dir))
 
 from utils import find_latest_checkpoint  # noqa: E402
-from climb_clm.generator import generate_tokens, tokens_to_climb  # noqa: E402
+from climb_gpt.generator import generate_tokens, tokens_to_climb  # noqa: E402
 
 
 def get_frames_model():
-    base_dir = "models/climb_clm"
+    base_dir = "models/climb_gpt"
 
     latest_checkpoint_dir = find_latest_checkpoint(base_dir)
     if latest_checkpoint_dir:
