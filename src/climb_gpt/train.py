@@ -21,7 +21,7 @@ args = parser.parse_args()
 # Create run name if not provided
 if args.run_name is None:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    f"run_{timestamp}"
+    args.run_name = f"run_{timestamp}"
 
 OUT_DIR = f"models/climb_gpt/{args.run_name}"
 
@@ -39,9 +39,7 @@ print("Processed.")
 preprocess_datasets(datasets, tokenizer)
 pprint.pprint(datasets["train"][0])
 
-data_collator = DataCollatorForLanguageModeling(
-    tokenizer=tokenizer, mlm=False, mlm_probability=0.15
-)
+data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
 
 model_config = GPT2Config(
     **{
