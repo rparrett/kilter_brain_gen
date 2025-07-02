@@ -1,6 +1,7 @@
 import argparse
 import pprint
 from datetime import datetime
+import torch
 
 from data import load_training_datasets, preprocess_datasets
 from train_tokenizer import train_tokenizer
@@ -16,6 +17,7 @@ from transformers import (
 
 parser = argparse.ArgumentParser(description="Train CLM model")
 parser.add_argument("--run-name", type=str, help="Name for this training run")
+parser.add_argument("--mps", action="store_true", help="Use MPS device if available")
 args = parser.parse_args()
 
 # Create run name if not provided
@@ -24,6 +26,16 @@ if args.run_name is None:
     args.run_name = f"run_{timestamp}"
 
 OUT_DIR = f"models/climb_gpt/{args.run_name}"
+
+if torch.cuda.is_available():
+    device = "cuda"
+elif torch.backends.mps.is_available() and args.mps:
+    device = "mps"
+else:
+    device = "cpu"
+
+torch.set_default_device(device)
+print(f"Using device: {device}")
 
 datasets = load_training_datasets()
 
@@ -78,7 +90,7 @@ training_args = TrainingArguments(
     greater_is_better=False,  # whether the best model is the one with the highest or lowest evaluation metric, e.g. loss vs accuracy
     metric_for_best_model="eval_loss",  # use eval_loss to compare models
     load_best_model_at_end=True,  # whether to load the best model (in terms of loss) at the end of training
-    dataloader_pin_memory = False, # pinning doesn't work on a gpu
+    dataloader_pin_memory=False,  # pinning doesn't work on a gpu
 )
 
 trainer = Trainer(
