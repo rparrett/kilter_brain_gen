@@ -6,8 +6,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "uv run ruff format && uv run ruff check --fix"
-          }
+            "command": "uv run ruff format"
+          },
+          {
+            "type": "command",
+            "command": "uv run ruff check --fix --show-fixes"
+          },
         ]
       }
     ]
