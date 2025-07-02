@@ -78,6 +78,7 @@ training_args = TrainingArguments(
     greater_is_better=False,  # whether the best model is the one with the highest or lowest evaluation metric, e.g. loss vs accuracy
     metric_for_best_model="eval_loss",  # use eval_loss to compare models
     load_best_model_at_end=True,  # whether to load the best model (in terms of loss) at the end of training
+    dataloader_pin_memory = False, # pinning doesn't work on a gpu
 )
 
 trainer = Trainer(
