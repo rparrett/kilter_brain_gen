@@ -15,7 +15,7 @@ def add_prefix(example):
 def load_training_datasets():
     dataset = load_dataset(
         "csv",
-        data_files="climbs.csv",
+        data_files="data/climbs.csv",
         delimiter=",",
         features=Features(
             {
