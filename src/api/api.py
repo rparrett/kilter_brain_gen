@@ -96,7 +96,7 @@ def generate():
                 "frames": climb["frames"],
                 "name": name,
                 "description": "beep boop",
-                "angle": climb["angle"],
+                "angle": int(climb["angle"]),
                 "difficulty": climb["difficulty"],
             }
         )
