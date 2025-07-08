@@ -3,6 +3,7 @@ import os.path
 import pprint
 import randomname
 import requests
+import re
 
 from random import randint
 from uuid import uuid4
@@ -111,6 +112,10 @@ def publish():
 
     is_draft = data.get("is_draft", False)
 
+    # TODO we should validate the placements and format as well
+    if has_custom_role(data["frames"]):
+        return {"error": "Climb has invalid roles"}
+
     if not os.path.isfile("token.json"):
         return {"error": "No stored token"}
 
@@ -146,3 +151,14 @@ def publish():
     pprint.pprint(res.content)
 
     return {}
+
+def has_custom_role(text):
+    allowed = {12, 13, 14, 15}
+
+    matches = re.findall(r'p\d+r(\d+)', text)
+
+    values = set(int(match) for match in matches)
+
+    not_allowed = values - allowed
+
+    return bool(not_allowed)
